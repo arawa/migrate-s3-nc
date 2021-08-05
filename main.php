@@ -37,7 +37,11 @@ $CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
 
 $DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
 
-$usersFolders = array_diff(scandir($DATADIRECTORY), ['.', '..', '.htaccess', '.ocdata', 'nextcloud.log', 'index.html']);
+$FOLDERS = array_diff(scandir($DATADIRECTORY), ['.', '..', '.htaccess', '.ocdata', 'nextcloud.log', 'index.html']);
+
+$usersFolders = array_filter($FOLDERS, function($FOLDER) {
+    return !preg_match("/appdata_[a-zA-Z0-9]/", $FOLDER);
+});
 
 $files = [];
 
