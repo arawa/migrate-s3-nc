@@ -1,14 +1,19 @@
 <?php
 
-use Dotenv\Dotenv;
-
 require __DIR__ . '/vendor/autoload.php';
+
+use DB\Mysql\MySql;
+use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 $dotenv->required('NEXTCLOUD_FOLDER_PATH')->notEmpty();
 $dotenv->required('NEXTCLOUD_CONFIG_PATH')->notEmpty();
+$dotenv->required('MYSQL_DATABASE_SCHEMA')->notEmpty();
+$dotenv->required('MYSQL_DATABASE_USER')->notEmpty();
+$dotenv->required('MYSQL_DATABASE_PASSWORD')->notEmpty();
+$dotenv->required('MYSQL_DATABASE_HOST')->notEmpty();
 
 require $_ENV['NEXTCLOUD_FOLDER_PATH'] . $_ENV['NEXTCLOUD_CONFIG_PATH'];
 
@@ -49,3 +54,7 @@ foreach($usersFolders as $userFolder) {
     $files[$userFolder] = getFilesFromDir($DATADIRECTORY . '/' . $userFolder);
 
 }
+
+$db = new MySql($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
+
+$storages = $db->getStorages();

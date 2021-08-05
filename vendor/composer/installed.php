@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '37f23dd1aa196f6478729c964abbfbf6d8c6a919',
+    'reference' => '39f009ccfbff9ae615851bafc884626b9166f078',
     'name' => '__root__',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '37f23dd1aa196f6478729c964abbfbf6d8c6a919',
+      'reference' => '39f009ccfbff9ae615851bafc884626b9166f078',
     ),
     'graham-campbell/result-type' => 
     array (
@@ -49,21 +49,21 @@
     ),
     'symfony/polyfill-mbstring' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.23.1',
+      'version' => '1.23.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => '2df51500adbaebdc4c38dea4c89a2e131c45c8a1',
+      'reference' => '9174a3d80210dca8daa7f31fec659150bbeabfc6',
     ),
     'symfony/polyfill-php80' => 
     array (
-      'pretty_version' => 'v1.23.0',
-      'version' => '1.23.0.0',
+      'pretty_version' => 'v1.23.1',
+      'version' => '1.23.1.0',
       'aliases' => 
       array (
       ),
-      'reference' => 'eca0bf41ed421bed1b57c4958bab16aa86b757d0',
+      'reference' => '1100343ed1a92e3a38f9ae122fc0eb21602547be',
     ),
     'vlucas/phpdotenv' => 
     array (
