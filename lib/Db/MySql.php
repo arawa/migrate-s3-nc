@@ -29,7 +29,8 @@ class MySql extends PDO {
         $this->dsn = "mysql:dbname=$this->DB_NAME;host=$this->HOST";
         // ERRMODE_EXCEPTION allows be define exceptions as errors.
         parent::__construct($this->dsn, $this->USER, $this->PASSWORD,  [
-            $this::ATTR_ERRMODE => $this::ERRMODE_EXCEPTION
+            $this::ATTR_ERRMODE => $this::ERRMODE_EXCEPTION,
+            $this::ATTR_DEFAULT_FETCH_MODE => $this::FETCH_OBJ
         ]);
     }
     
@@ -43,7 +44,7 @@ class MySql extends PDO {
 
             $query = $this->query('select * from oc_storages where id not regexp "local"');
     
-            return $query->fetchAll($this::FETCH_OBJ);
+            return $query->fetchAll();
             
         } catch(PDOException $e) {
 
