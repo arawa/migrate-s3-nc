@@ -6,7 +6,7 @@ namespace DB\Mysql;
 use PDO;
 use PDOException;
 
-class MySql extends PDO {
+class MySqlMapper extends PDO {
 
     /** @var string */
     private $HOST;
