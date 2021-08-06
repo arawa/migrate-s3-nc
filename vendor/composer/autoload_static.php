@@ -7,9 +7,9 @@ namespace Composer\Autoload;
 class ComposerStaticInit0dc8eaa06f82c3614a8de68029065fd6
 {
     public static $files = array (
-        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
-        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
         '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        '0e6d7bf4a5811bfa5cf40c5ccd6fae6a' => __DIR__ . '/..' . '/symfony/polyfill-mbstring/bootstrap.php',
+        'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -30,6 +30,7 @@ class ComposerStaticInit0dc8eaa06f82c3614a8de68029065fd6
         'D' => 
         array (
             'Dotenv\\' => 7,
+            'DB\\Mysql\\' => 9,
         ),
     );
 
@@ -57,6 +58,10 @@ class ComposerStaticInit0dc8eaa06f82c3614a8de68029065fd6
         'Dotenv\\' => 
         array (
             0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
+        ),
+        'DB\\Mysql\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/lib/Db',
         ),
     );
 
