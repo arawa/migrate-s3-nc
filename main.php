@@ -58,3 +58,37 @@ foreach($usersFolders as $userFolder) {
 $db = new MySqlMapper($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
 
 $storages = $db->getStorages();
+
+$directoryUnix = $db->getUnixDirectoryMimeType();
+
+$localStorage = $db->getLocalStorage();
+
+$filescache = $db->getFilesCache($directoryUnix->id, $localStorage->numeric_id);
+
+
+/** Fill the $filesFullStack foreach owner and foreach owner will be an array list 
+ * of a path_file and their fileid.
+ * Example : 
+ * [
+ *  "foo" => [ 
+ *      [
+ *          "path_file" => "/data/nextcloud/foo/files/Documents/Documents.odt",
+ *          "fileid" => 1234
+ *      ]
+ *  ]
+ * ]
+*/
+$filesFullStack = [];
+foreach($files as $owner => $files) {
+    $filesFullStack[$owner] = [];
+    foreach($files as $file) {
+        foreach($filescache as $filecache) {
+            if(str_contains($DATADIRECTORY . '/' . $owner . '/' . $filecache->path, $file)) {
+                $filesFullStack[$owner][] = [
+                    "path_file" => $filecache->path,
+                    "fileid" => $filecache->fileid
+                ];
+            }
+        }
+    }
+}
