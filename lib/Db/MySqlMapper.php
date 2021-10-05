@@ -100,6 +100,39 @@ class MySqlMapper extends PDO {
     }
 
     /**
+     * @return object where the fiels are properties.
+     * @example $filescaches[0]->id
+     */
+    public function getFilesCacheByOwner($idOwner, $idDirectoryUnix = null, $idLocalStorage = null) {
+        try {
+
+			if (is_null($idOwner)) {
+				print('Error, the $idOwner is not define.' . "\n");
+				exit();
+			}
+
+            $args = "where storage=$idOwner";
+
+            if(! is_null($idDirectoryUnix)) {
+                $args = $args . " and not mimetype=$idDirectoryUnix";
+            }
+            
+            if(! is_null($idLocalStorage)) {
+                $args = $args . " and not storage=$idLocalStorage";
+            }
+
+            $query = $this->query('select * from oc_filecache ' . $args);
+    
+            return $query->fetchAll();
+            
+        } catch(PDOException $e) {
+
+            die($e->getMessage());
+
+        }
+    }
+
+    /**
      * @return object where the fields are properties.
      * @example $unixDirectory->id
      */

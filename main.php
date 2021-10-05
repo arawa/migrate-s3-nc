@@ -17,43 +17,12 @@ $dotenv->required('MYSQL_DATABASE_HOST')->notEmpty();
 
 require $_ENV['NEXTCLOUD_FOLDER_PATH'] . $_ENV['NEXTCLOUD_CONFIG_PATH'];
 
-function getFilesFromDir($DIR, &$files = []) {
-
-    $DIRS = array_diff(scandir($DIR), ['.', '..']);
-
-    $DIRS = array_map(function($file) use ($DIR) {
-        return $DIR . '/' . $file;
-    }, $DIRS);
-
-    foreach($DIRS as $file) {
-        if (is_dir($file)) {
-            getFilesFromDir($file, $files);
-        } else {
-            $files[] = $file;
-        }
-    }
-    return $files;
-    
-}
 
 $NEXTCLOUD_VARIABLES_CONFIG = get_defined_vars();
 
 $CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
 
 $DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
-
-$FOLDERS = array_diff(scandir($DATADIRECTORY), ['.', '..', '.htaccess', '.ocdata', 'nextcloud.log', 'index.html']);
-
-$usersFolders = array_filter($FOLDERS, function($FOLDER) {
-    return !preg_match("/appdata_[a-zA-Z0-9]/", $FOLDER);
-});
-
-$files = [];
-
-foreach($usersFolders as $userFolder) {
-    $files[$userFolder] = getFilesFromDir($DATADIRECTORY . '/' . $userFolder);
-
-}
 
 $db = new MySqlMapper($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
 
@@ -63,32 +32,44 @@ $directoryUnix = $db->getUnixDirectoryMimeType();
 
 $localStorage = $db->getLocalStorage();
 
-$filescache = $db->getFilesCache($directoryUnix->id, $localStorage->numeric_id);
-
-
-/** Fill the $filesFullStack foreach owner and foreach owner will be an array list 
- * of a path_file and their fileid.
- * Example : 
- * [
- *  "foo" => [ 
- *      [
- *          "path_file" => "/data/nextcloud/foo/files/Documents/Documents.odt",
- *          "fileid" => 1234
- *      ]
- *  ]
- * ]
-*/
-$filesFullStack = [];
-foreach($files as $owner => $files) {
-    $filesFullStack[$owner] = [];
-    foreach($files as $file) {
-        foreach($filescache as $filecache) {
-            if(str_contains($DATADIRECTORY . '/' . $owner . '/' . $filecache->path, $file)) {
-                $filesFullStack[$owner][] = [
-                    "path_file" => $filecache->path,
-                    "fileid" => $filecache->fileid
-                ];
-            }
-        }
-    }
+foreach($storages as $storage) {
+    $idExplode = explode('::', $storage->id);
+    $storage->id = $idExplode[1];
 }
+
+// Create jsons folder which contents all json files.
+if (!file_exists(__DIR__ . '/jsons')) {
+    mkdir(__DIR__ . '/jsons');
+}
+
+/** Create json files with the name is the uid/owner of user.
+ *  Fill each files an object with these keys : 
+ *      - owner (uid/owner of user)
+ *      - files (informations on files)
+ *          - old_path (current path file)
+ *          - new_path (the new file name)
+ *          - new_storage (the new storage name for database)
+*/
+foreach($storages as $storage) {
+    $filesByOwner = [];
+	$filesByOwner['owner'] = $storage->id;
+	$filesByOwner['files'] = [];
+    $filescacheOfOwner = $db->getFilesCacheByOwner($storage->numeric_id, $directoryUnix->id, $localStorage->numeric_id);
+    foreach($filescacheOfOwner as $filecache) {
+        $filesByOwner['files'][] = [
+            "old_path" => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
+            "new_path" => 'urn:oid:' . $filecache->fileid,
+            "new_storage" => 'object::user:' . $storage->id
+        ];
+    }
+    file_put_contents(__DIR__ . "/jsons/$storage->id.json", json_encode($filesByOwner, JSON_PRETTY_PRINT));
+    unset($filesByOwner);
+}
+
+// Get all json files.
+$jsonFiles = array_map(function ($file) {
+	return __DIR__ . "/json/$file";
+},
+array_diff(scandir(__DIR__ . '/jsons'), ['.', '..']));
+
+// loop all json files to process the migration and update the database.
