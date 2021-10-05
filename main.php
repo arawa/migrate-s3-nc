@@ -65,6 +65,7 @@ foreach($storages as $storage) {
     }
     file_put_contents(__DIR__ . "/jsons/$storage->id.json", json_encode($filesByOwner, JSON_PRETTY_PRINT));
     unset($filesByOwner);
+	unset($filescacheOfOwner);
 }
 
 // Get all json files.
