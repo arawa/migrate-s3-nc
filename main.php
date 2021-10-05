@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Aws\S3\S3Client;
 use DB\Mysql\MySqlMapper;
 use Dotenv\Dotenv;
 
@@ -75,3 +76,31 @@ $jsonFiles = array_map(function ($file) {
 array_diff(scandir(__DIR__ . '/jsons'), ['.', '..']));
 
 // loop all json files to process the migration and update the database.
+
+// {
+//     'path_file' =>
+//     string(77) "/data/nextcloud/nc-s3.dev.arawa.fr/bfotia/files/Documents/Chanson mariage.odt"
+//     'fileid' =>
+//     string(4) "4455"
+//   }
+// {
+// var_dump($filesFullStack['bfotia'][0]['path_file']);
+/**
+ * @todo To search how rename the file at the same time as push
+ */
+die();
+$s3 = new Aws\S3\S3Client([
+    'version'   => '2006-03-01',
+    'region'    => $_ENV['S3_REGION'],
+    'credentials'   => [
+        'key'   => $_ENV['S3_KEY'],
+        'secret'    =>  $_ENV['S3_SECRET'],
+    ],
+    'endpoint'  => $_ENV['S3_ENDPOINT'],
+]);
+
+$s3->putObject([
+    'Bucket' => $_ENV['S3_BUCKET_NAME'],
+    'Key'   => $_ENV['S3_KEY'],
+    'SourceFile'    => $filesFullStack['bfotia'][0]['path_file'],
+]);
