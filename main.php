@@ -45,21 +45,22 @@ if (!file_exists(__DIR__ . '/jsons')) {
 /** Create json files with the name is the uid/owner of user.
  *  Fill each files an object with these keys : 
  *      - owner (uid/owner of user)
+ *      - new_storage (the new storage name for database)
  *      - files (informations on files)
  *          - old_path (current path file)
  *          - new_path (the new file name)
- *          - new_storage (the new storage name for database)
 */
 foreach($storages as $storage) {
     $filesByOwner = [];
 	$filesByOwner['owner'] = $storage->id;
+	$filesByOwner['new_storage'] = 'object::user:' . $storage->id;
 	$filesByOwner['files'] = [];
     $filescacheOfOwner = $db->getFilesCacheByOwner($storage->numeric_id, $directoryUnix->id, $localStorage->numeric_id);
     foreach($filescacheOfOwner as $filecache) {
+		$dirname = dirname($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path);
         $filesByOwner['files'][] = [
             "old_path" => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
-            "new_path" => 'urn:oid:' . $filecache->fileid,
-            "new_storage" => 'object::user:' . $storage->id
+            "new_path" => $dirname . '/urn:oid:' . $filecache->fileid,
         ];
     }
     file_put_contents(__DIR__ . "/jsons/$storage->id.json", json_encode($filesByOwner, JSON_PRETTY_PRINT));
