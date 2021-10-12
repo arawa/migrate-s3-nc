@@ -58,22 +58,31 @@ foreach($storages as $storage) {
 	$filesByOwner['files'] = [];
     $filescacheOfOwner = $db->getFilesCacheByOwner($storage->numeric_id, $directoryUnix->id, $localStorage->numeric_id);
     foreach($filescacheOfOwner as $filecache) {
+		/** @todo putObject here ? */
 		$dirname = dirname($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path);
         $filesByOwner['files'][] = [
             "old_path" => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
             "new_path" => $dirname . '/urn:oid:' . $filecache->fileid,
+            "old_basename" => basename($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path),
+            "new_basename" => basename($dirname . '/urn:oid:' . $filecache->fileid)
         ];
     }
+	/** @todo update table here ? **/
     file_put_contents(__DIR__ . "/jsons/$storage->id.json", json_encode($filesByOwner, JSON_PRETTY_PRINT));
     unset($filesByOwner);
 	unset($filescacheOfOwner);
 }
 
 // Get all json files.
+$jsonFiles = array_filter(scandir(__DIR__ . '/jsons'), function($file) {
+    if ($file !== '.' && $file !== '..') {
+        return $file;
+    }
+});
+
 $jsonFiles = array_map(function ($file) {
-	return __DIR__ . "/json/$file";
-},
-array_diff(scandir(__DIR__ . '/jsons'), ['.', '..']));
+    return __DIR__ . "/jsons/" . $file;
+}, $jsonFiles);
 
 // loop all json files to process the migration and update the database.
 
@@ -84,12 +93,10 @@ array_diff(scandir(__DIR__ . '/jsons'), ['.', '..']));
 //     string(4) "4455"
 //   }
 // {
-// var_dump($filesFullStack['bfotia'][0]['path_file']);
 /**
  * @todo To search how rename the file at the same time as push
  */
-die();
-$s3 = new Aws\S3\S3Client([
+$s3 = new S3Client([
     'version'   => '2006-03-01',
     'region'    => $_ENV['S3_REGION'],
     'credentials'   => [
@@ -99,8 +106,13 @@ $s3 = new Aws\S3\S3Client([
     'endpoint'  => $_ENV['S3_ENDPOINT'],
 ]);
 
-$s3->putObject([
-    'Bucket' => $_ENV['S3_BUCKET_NAME'],
-    'Key'   => $_ENV['S3_KEY'],
-    'SourceFile'    => $filesFullStack['bfotia'][0]['path_file'],
-]);
+foreach ($jsonFiles as $jsonFile) {
+    $json = json_decode(file_get_contents($jsonFile), true);
+    foreach( $json['files'] as $file) {
+        $s3->putObject([
+            'Bucket' => $_ENV['S3_BUCKET_NAME'],
+            'Key'   => $file['new_basename'],
+            'SourceFile'    => $file['base_path'],
+        ]);
+    }
+}
