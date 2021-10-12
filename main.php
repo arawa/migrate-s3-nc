@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Aws\S3\S3Client;
 use DB\Mysql\MySqlMapper;
 use Dotenv\Dotenv;
 
@@ -37,41 +38,30 @@ foreach($storages as $storage) {
     $storage->id = $idExplode[1];
 }
 
-// Create jsons folder which contents all json files.
-if (!file_exists(__DIR__ . '/jsons')) {
-    mkdir(__DIR__ . '/jsons');
-}
+$s3 = new S3Client([
+    'version'   => '2006-03-01',
+    'region'    => $_ENV['S3_REGION'],
+    'credentials'   => [
+        'key'   => $_ENV['S3_KEY'],
+        'secret'    =>  $_ENV['S3_SECRET'],
+    ],
+    'endpoint'  => $_ENV['S3_ENDPOINT'],
+]);
 
-/** Create json files with the name is the uid/owner of user.
- *  Fill each files an object with these keys : 
- *      - owner (uid/owner of user)
- *      - new_storage (the new storage name for database)
- *      - files (informations on files)
- *          - old_path (current path file)
- *          - new_path (the new file name)
+/** Put for each files on a Object Storage server and
+ * update the database table.
 */
 foreach($storages as $storage) {
-    $filesByOwner = [];
-	$filesByOwner['owner'] = $storage->id;
-	$filesByOwner['new_storage'] = 'object::user:' . $storage->id;
-	$filesByOwner['files'] = [];
     $filescacheOfOwner = $db->getFilesCacheByOwner($storage->numeric_id, $directoryUnix->id, $localStorage->numeric_id);
+	$newStorage = 'object::user:' . $storage->id;
     foreach($filescacheOfOwner as $filecache) {
+		/** @todo putObject here ? */
 		$dirname = dirname($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path);
-        $filesByOwner['files'][] = [
-            "old_path" => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
-            "new_path" => $dirname . '/urn:oid:' . $filecache->fileid,
-        ];
+		$s3->putObject([
+            'Bucket' => $_ENV['S3_BUCKET_NAME'],
+            'Key'   => basename($dirname . '/urn:oid:' . $filecache->fileid),
+            'SourceFile'    => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
+        ]);
     }
-    file_put_contents(__DIR__ . "/jsons/$storage->id.json", json_encode($filesByOwner, JSON_PRETTY_PRINT));
-    unset($filesByOwner);
-	unset($filescacheOfOwner);
+	/** @todo update table here ? **/
 }
-
-// Get all json files.
-$jsonFiles = array_map(function ($file) {
-	return __DIR__ . "/json/$file";
-},
-array_diff(scandir(__DIR__ . '/jsons'), ['.', '..']));
-
-// loop all json files to process the migration and update the database.
