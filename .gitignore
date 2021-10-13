@@ -1,3 +1,4 @@
 .env
 notes/
 vendor/
+.php-cs-fixer.cache

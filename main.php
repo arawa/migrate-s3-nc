@@ -33,7 +33,7 @@ $directoryUnix = $db->getUnixDirectoryMimeType();
 
 $localStorage = $db->getLocalStorage();
 
-foreach($storages as $storage) {
+foreach ($storages as $storage) {
     $idExplode = explode('::', $storage->id);
     $storage->id = $idExplode[1];
 }
@@ -51,17 +51,17 @@ $s3 = new S3Client([
 /** Put for each files on a Object Storage server and
  * update the database table.
 */
-foreach($storages as $storage) {
+foreach ($storages as $storage) {
     $filescacheOfOwner = $db->getFilesCacheByOwner($storage->numeric_id, $directoryUnix->id, $localStorage->numeric_id);
-	$newStorage = 'object::user:' . $storage->id;
-    foreach($filescacheOfOwner as $filecache) {
-		/** @todo putObject here ? */
-		$dirname = dirname($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path);
-		$s3->putObject([
+    $newStorage = 'object::user:' . $storage->id;
+    foreach ($filescacheOfOwner as $filecache) {
+        /** @todo putObject here ? */
+        $dirname = dirname($DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path);
+        $s3->putObject([
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
             'Key'   => basename($dirname . '/urn:oid:' . $filecache->fileid),
             'SourceFile'    => $DATADIRECTORY . '/' . $storage->id . '/' . $filecache->path,
         ]);
     }
-	/** @todo update table here ? **/
+    /** @todo update table here ? **/
 }
