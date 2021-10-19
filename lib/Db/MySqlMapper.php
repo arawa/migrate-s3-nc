@@ -54,6 +54,26 @@ class MySqlMapper extends PDO {
     }
 
     /**
+     * update the id storage (not numeric_id)
+     */
+    public function updateIdStorage($numericId, $newId) {
+        // update
+        try {
+
+            $query = $this->prepare('update oc_storages set id=:id where numeric_id=:numeric_id');
+            $query->execute([
+                'id'    => $newId,
+                'numeric_id'    => $numericId
+            ]);
+
+        } catch(PDOException $e) {
+
+            die($e->getMessage());
+            
+        }
+    }
+    
+    /**
      * @return object where the fields are properties.
      * @example $localStorage->id
      */
