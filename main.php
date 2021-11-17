@@ -18,10 +18,10 @@ $dotenv->required('MYSQL_DATABASE_PASSWORD')->notEmpty();
 $dotenv->required('MYSQL_DATABASE_HOST')->notEmpty();
 $dotenv->required('S3_PROVIDER_NAME')->notEmpty();
 
-$S3_SWIFT = ['openstack', 'swift', 'ovh'];
+$PROVIDERS_S3_SWIFT = ['openstack', 'swift', 'ovh'];
 
 // Required the good env vars.
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $S3_SWIFT)) {
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $dotenv->required('S3_ENDPOINT')->notEmpty();
     $dotenv->required('S3_SWIFT_URL')->notEmpty();
     $dotenv->required('S3_REGION')->notEmpty();
@@ -68,9 +68,11 @@ $s3 = new S3Client([
     'endpoint'  => $_ENV['S3_ENDPOINT'],
     'signature_version' => 'v4',
     'http' => [
-        'connect_timeout' => 0
-    ]
+        'connect_timeout' => 0,
+        'delay' => 10000,
+    ],
 ]);
+
 
 /** Put for each users' files on a Object Storage server with promises.
 */
@@ -98,8 +100,23 @@ foreach($listObjectFileid as $fileid) {
     );
 }
 
-$allPromise = Utils::all($promises);
+$allPromise = Utils::all($promises)
+    ->then(
+        function($res) {
+            print("Okay\n");
+            // print($res->getHeaderLine('Retry-After') . "\n");            
+        },
+        function($reject) {
+            print("Reject !\n");
+            print($reject->getMessage() . "\n");
+            print($reject->getRequest()->getMethod() . "\n");
+            print($reject->getStatusCode() . "\n");
+        }
+    );
 $allPromise->wait();
+
+print("Waiting 1 seconds.\n");
+sleep(1);
 
 // Update the oc_storages database table.
 // Excepted local user.
@@ -138,17 +155,29 @@ foreach($listObjectFileidOfLocalUser as $fileidOfUserLocal) {
     }
 }
 
-$allPromiseOfUserLocal = Utils::all($promisesOfLocalUser);
+$allPromiseOfUserLocal = Utils::all($promisesOfLocalUser)
+    ->then(
+        function($res) {
+            print("Okay from local\n");
+            // print($res->getHeaderLine('Retry-After') . "\n");            
+        },
+        function($reject) {
+            print("Reject from local!\n");
+            print($reject->getMessage() . "\n");
+            print($reject->getRequest()->getMethod() . "\n");
+            print($reject->getStatusCode() . "\n");
+        }
+    );
 $allPromiseOfUserLocal->wait();
 
 // Update the target datadirectory on object storage S3 server
-$newIdLocalStorage = 'object::store:' . $_ENV['S3_BUCKET_NAME'];
+$newIdLocalStorage = 'object::store:scaleway:' . $_ENV['S3_BUCKET_NAME'];
 $db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
 
 // Creating the new config for Nextcloud
 $NEW_CONFIG_NEXTCLOUD = $CONFIG_NEXTCLOUD; // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
 $NEW_CONFIG_NEXTCLOUD['maintenance'] = false;
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $S3_SWIFT)) {
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
         'class' => 'OC\\Files\\ObjectStore\\Swift',
         'arguments' => [
@@ -183,10 +212,9 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $S3_SWIFT)) {
             'key'   => $_ENV['S3_KEY'],
             'secret'    => $_ENV['S3_SECRET'],
             'hostname'  => $_ENV['S3_HOSTNAME'],
-            'port'  => $_ENV['S3_PORT'],
+            'port'  => intval($_ENV['S3_PORT']),
             'use_ssl'   => true,
-            'region'    => strtoupper($_ENV['S3_REGION']),
-            'use_path_style'    => true
+            'region'    => strtolower($_ENV['S3_REGION']),
 	    ]
     ];
 }
