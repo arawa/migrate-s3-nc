@@ -2,10 +2,10 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Aws\CommandPool;
+use Dotenv\Dotenv;
 use Aws\S3\S3Client;
 use DB\Mysql\MySqlMapper;
-use Dotenv\Dotenv;
-use GuzzleHttp\Promise\Utils;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
@@ -50,6 +50,8 @@ $CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
 
 $DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
 
+$CONCURRENCY = 1000;
+
 $db = new MySqlMapper($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
 
 $directoryUnix = $db->getUnixDirectoryMimeType();
@@ -74,49 +76,87 @@ $s3 = new S3Client([
 ]);
 
 
-/** Put for each users' files on a Object Storage server with promises.
+/** Put user's files on a Object Storage server with concurrency.
 */
-$promises = [];
-foreach($listObjectFileid as $fileid) {
-    
-    // fileCache : It contains the file list for each users.
-    $fileCache = $db->getFileCache($fileid->fileid);
-    // storage : It contains the home directory of users.
-    $storage = $db->getStorage($fileCache->getStorage());
+$commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $localStorage, $DATADIRECTORY) {
+    foreach ($fileids as $fileid) {
+        // fileCache : It contains the file list for each users.
+        $fileCache = $db->getFileCache($fileid->fileid);
+        // storage : It contains the home directory of users.
+        $storage = $db->getStorage($fileCache->getStorage());
 
-    // If it's an unix folder or for user local (ex: local::/data/nextcloud/)
-    if ($fileCache->getMimeType() === $directoryUnix->id
-    || $fileCache->getStorage() === $localStorage->numeric_id) {
-        continue;
-    }
+        // If it's an unix folder or for user local (ex: local::/data/nextcloud/)
+        if ($fileCache->getMimeType() === $directoryUnix->id
+        || $fileCache->getStorage() === $localStorage->numeric_id) {
+            continue;
+        }
 
-    $dirname = dirname($DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath());
-    $promises[] = $s3->putObjectAsync(
-        [
+        $dirname = dirname($DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath());
+
+        yield $s3->getCommand('PutObject', [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
             'Key'  => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
             'SourceFile' => $DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath(),
-        ]
-    );
-}
+        ]);
 
-$allPromise = Utils::all($promises)
-    ->then(
-        function($res) {
-            print("Okay\n");
-            // print($res->getHeaderLine('Retry-After') . "\n");            
-        },
-        function($reject) {
-            print("Reject !\n");
-            print($reject->getMessage() . "\n");
-            print($reject->getRequest()->getMethod() . "\n");
-            print($reject->getStatusCode() . "\n");
+    }
+};
+
+$commandsForUsers = $commandGeneratorForUsers($listObjectFileid);
+
+// Creating pool for users
+$poolForUsers = new CommandPool($s3, $commandsForUsers, [
+    'concurrency' => $CONCURRENCY,
+]);
+
+// Creating promises for users
+$promiseForUsers = $poolForUsers->promise();
+
+/** Put files of local user on a Object Storage server with promise.
+*/
+$listObjectFileidOfLocalUser = $db->getListObjectFileidByOwner($localStorage->numeric_id, $directoryUnix->id);
+$explodePathLocalStorage =  explode('::', $localStorage->id);
+$pathLocalStorage = $explodePathLocalStorage[1];
+
+/** Put files of local user on a Object Storage server with concurrency.
+*/
+$commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $pathLocalStorage) {
+    foreach($fileids as $fileidOfUserLocal) {
+        // fileCache : It contains the file list for each users.
+        $fileCache = $db->getFileCache($fileidOfUserLocal->fileid);
+    
+        if ($fileCache->getMimeType() === $directoryUnix->id) {
+            continue;
         }
-    );
-$allPromise->wait();
+    
+        if (file_exists($pathLocalStorage . $fileCache->getPath())) {
+            // storage : It contains the home directory of users.
+            $storage = $db->getStorage($fileCache->getStorage());
+    
+            $dirname = dirname($pathLocalStorage . $fileCache->getPath());
 
-print("Waiting 1 seconds.\n");
-sleep(1);
+            yield $s3->getCommand('PutObject', [
+                'Bucket' => $_ENV['S3_BUCKET_NAME'],
+                'Key'   => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
+                'SourceFile'    => $pathLocalStorage . $fileCache->getPath(),
+            ]);
+        }
+    }
+};
+
+
+$commandsForLocal = $commandGeneratorForLocal($listObjectFileidOfLocalUser);
+// Creating pool for users
+$poolForLocal = new CommandPool($s3, $commandsForLocal, [
+    'concurrency' => $CONCURRENCY,
+]);
+
+// Creating promises for local
+$promiseForLocal = $poolForLocal->promise();
+
+// Waitting promises
+$promiseForUsers->wait();
+$promiseForUsers->wait();
 
 // Update the oc_storages database table.
 // Excepted local user.
@@ -127,51 +167,13 @@ foreach($NumericIdStorages as $NumericIdStorage ) {
     $db->updateIdStorage($storage->getNumericId(), $newIdStorage);
 }
 
-/** Put files of local user on a Object Storage server with promise.
-*/
-$listObjectFileidOfLocalUser = $db->getListObjectFileidByOwner($localStorage->numeric_id, $directoryUnix->id);
-$explodePathLocalStorage =  explode('::', $localStorage->id);
-$pathLocalStorage = $explodePathLocalStorage[1];
-$promisesOfLocalUser = [];
-
-foreach($listObjectFileidOfLocalUser as $fileidOfUserLocal) {
-    // fileCache : It contains the file list for each users.
-    $fileCache = $db->getFileCache($fileidOfUserLocal->fileid);
-
-    if ($fileCache->getMimeType() === $directoryUnix->id) {
-        continue;
-    }
-
-    if (file_exists($pathLocalStorage . $fileCache->getPath())) {
-        // storage : It contains the home directory of users.
-        $storage = $db->getStorage($fileCache->getStorage());
-
-        $dirname = dirname($pathLocalStorage . $fileCache->getPath());
-        $promisesOfLocalUser[] = $s3->putObjectAsync([
-            'Bucket' => $_ENV['S3_BUCKET_NAME'],
-            'Key'   => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
-            'SourceFile'    => $pathLocalStorage . $fileCache->getPath(),
-        ]);
-    }
+// Update the target datadirectory on object storage S3 server
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
+    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
+} else {
+    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_PROVIDER_NAME']) . '::' . $_ENV['S3_BUCKET_NAME'];
 }
 
-$allPromiseOfUserLocal = Utils::all($promisesOfLocalUser)
-    ->then(
-        function($res) {
-            print("Okay from local\n");
-            // print($res->getHeaderLine('Retry-After') . "\n");            
-        },
-        function($reject) {
-            print("Reject from local!\n");
-            print($reject->getMessage() . "\n");
-            print($reject->getRequest()->getMethod() . "\n");
-            print($reject->getStatusCode() . "\n");
-        }
-    );
-$allPromiseOfUserLocal->wait();
-
-// Update the target datadirectory on object storage S3 server
-$newIdLocalStorage = 'object::store:scaleway:' . $_ENV['S3_BUCKET_NAME'];
 $db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
 
 // Creating the new config for Nextcloud
