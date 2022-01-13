@@ -84,7 +84,6 @@ $commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $
         $fileCache = $db->getFileCache($fileid->fileid);
         // storage : It contains the home directory of users.
         $storage = $db->getStorage($fileCache->getStorage());
-
         // If it's an unix folder or for user local (ex: local::/data/nextcloud/)
         if ($fileCache->getMimeType() === $directoryUnix->id
         || $fileCache->getStorage() === $localStorage->numeric_id) {
@@ -156,7 +155,7 @@ $promiseForLocal = $poolForLocal->promise();
 
 // Waitting promises
 $promiseForUsers->wait();
-$promiseForUsers->wait();
+$promiseForLocal->wait();
 
 // Update the oc_storages database table.
 // Excepted local user.
