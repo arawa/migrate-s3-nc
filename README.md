@@ -238,7 +238,7 @@ Created by [Arawa](https://www.arawa.fr/) and in collaboration with [Sorbonne Un
 
 <div style="width: 100%; display: flex; justify-content: center; margin-top: 60px;">
     <div style="width: 60%;">
-        <img src="./images/Logo_SU_horiz_RVB_white.svg" style="width: 20%; margin-right: 300px;">
+        <img src="./images/Logo_SU_horiz_RVB_color.svg" style="width: 20%; margin-right: 300px;">
         <img src="./images/logo_arawa.svg" style="width: 30%;">
     </div>
 </div>
