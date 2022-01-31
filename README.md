@@ -234,7 +234,7 @@ Then, you must :
 
 # Credits
 
-Created by [Arawa](https://www.arawa.fr/) and in collaboration with [Sorbonne University](https://www.sorbonne-universite.fr/).
+The initial code of this software has been developed by [Arawa](https://www.arawa.fr/) with the financial support of [Sorbonne Université](https://www.sorbonne-universite.fr/).
 
 <div style="width: 100%; display: flex; justify-content: center; margin-top: 60px;">
     <div style="width: 60%;">
