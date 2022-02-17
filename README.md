@@ -236,9 +236,9 @@ Then, you must :
 
 The initial code of this software has been developed by [Arawa](https://www.arawa.fr/) with the financial support of [Sorbonne Université](https://www.sorbonne-universite.fr/).
 
-<div style="width: 100%; display: flex; justify-content: center; margin-top: 60px;">
-    <div style="width: 60%;">
-        <img src="./images/Logo_SU_horiz_RVB_color.svg" style="width: 20%; margin-right: 300px;">
-        <img src="./images/logo_arawa.svg" style="width: 30%;">
+<div align="center" width="100%">
+    <div width="60%;">
+        <img src="./images/Logo_SU_horiz_RVB_color.svg" width="20%">
+        <img src="./images/logo_arawa.svg" width="30%">
     </div>
 </div>
