@@ -2,3 +2,5 @@
 notes/
 vendor/
 new_config.php
+
+.php-cs-fixer.cache
