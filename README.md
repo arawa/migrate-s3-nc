@@ -231,3 +231,14 @@ Then, you must :
 
 - Dotenv : To set your config.
 - Aws SDK Php : To push your files.
+
+# Credits
+
+The initial code of this software has been developed by [Arawa](https://www.arawa.fr/) with the financial support of [Sorbonne Université](https://www.sorbonne-universite.fr/).
+
+<div align="center" width="100%">
+    <div width="60%;">
+        <img src="./images/Logo_SU_horiz_RVB_color.svg" width="20%">
+        <img src="./images/logo_arawa.svg" width="30%">
+    </div>
+</div>
