@@ -11,23 +11,25 @@ class Filecache
 
     public function __construct()
     {
-
     }
 
-    public function getPath() {
+    public function getPath()
+    {
         return $this->path;
     }
 
-    public function getMimeType() {
+    public function getMimeType()
+    {
         return $this->mimetype;
     }
 
-    public function getStorage() {
+    public function getStorage()
+    {
         return $this->storage;
     }
 
-    public function getFileid() {
+    public function getFileid()
+    {
         return $this->fileid;
     }
-
 }

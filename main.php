@@ -15,7 +15,7 @@ $dateFormatForLog = "Y-m-d\TH:i:sP";
 $outputForLog = "[%datetime%] %level_name% %message% %context% %extra%\n";
 $formatterForLog = new LineFormatter($outputForLog, $dateFormatForLog);
 
-if ( !is_dir(__DIR__ . '/logs')) {
+if (!is_dir(__DIR__ . '/logs')) {
     mkdir(__DIR__ . '/logs');
 }
 
@@ -51,7 +51,6 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $dotenv->required('S3_SWIFT_PASSWORD')->notEmpty();
     $dotenv->required('S3_BUCKET_NAME')->notEmpty();
     $dotenv->required('S3_SWIFT_ID_PROJECT')->notEmpty();
-
 } else {
     $migrateLogger->info('The S3 server is S3 Compatbile');
     $dotenv->required('S3_ENDPOINT')->notEmpty();
@@ -122,7 +121,6 @@ $commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $
             'Key'  => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
             'SourceFile' => $DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath(),
         ]);
-
     }
 };
 
@@ -148,18 +146,18 @@ $pathLocalStorage = $explodePathLocalStorage[1];
 */
 $migrateLogger->info('Preparing to send LocalUser\'s files asynchronously');
 $commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $pathLocalStorage) {
-    foreach($fileids as $fileidOfUserLocal) {
+    foreach ($fileids as $fileidOfUserLocal) {
         // fileCache : It contains the file list for each users.
         $fileCache = $db->getFileCache($fileidOfUserLocal->fileid);
-    
+
         if ($fileCache->getMimeType() === $directoryUnix->id) {
             continue;
         }
-    
+
         if (file_exists($pathLocalStorage . $fileCache->getPath())) {
             // storage : It contains the home directory of users.
             $storage = $db->getStorage($fileCache->getStorage());
-    
+
             $dirname = dirname($pathLocalStorage . $fileCache->getPath());
 
             yield $s3->getCommand('PutObject', [
@@ -191,7 +189,7 @@ $promiseForLocal->wait();
 // Excepted local user.
 $migrateLogger->info('Updating the Storage database table foreach users');
 $NumericIdStorages = $db->getNumericIdStorages();
-foreach($NumericIdStorages as $NumericIdStorage ) {
+foreach ($NumericIdStorages as $NumericIdStorage) {
     $storage = $db->getStorage($NumericIdStorage->numeric_id);
     $newIdStorage = 'object::user:' . $storage->getUid();
     $db->updateIdStorage($storage->getNumericId(), $newIdStorage);
@@ -250,7 +248,7 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
             'port'  => intval($_ENV['S3_PORT']),
             'use_ssl'   => true,
             'region'    => strtolower($_ENV['S3_REGION']),
-	    ]
+        ]
     ];
 }
 

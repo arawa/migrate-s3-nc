@@ -20,26 +20,30 @@ class Storage
             $idExplode = explode('::', $this->id);
             $this->uid = $idExplode[1];
         }
-
     }
 
-    public function getId() {
+    public function getId()
+    {
         return $this->id;
     }
 
-    public function getNumericId() {
+    public function getNumericId()
+    {
         return $this->numeric_id;
     }
 
-    public function getAvailable() {
+    public function getAvailable()
+    {
         return $this->available;
     }
 
-    public function getLasetChecked() {
+    public function getLasetChecked()
+    {
         return $this->last_checked;
     }
 
-    public function getUid() {
+    public function getUid()
+    {
         return $this->uid;
     }
 }
