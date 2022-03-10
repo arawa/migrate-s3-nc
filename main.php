@@ -2,13 +2,18 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Aws\CommandPool;
 use Dotenv\Dotenv;
-use Aws\S3\S3Client;
-use DB\Mysql\MySqlMapper;
 use Monolog\Logger;
+use Aws\CommandPool;
+use Aws\S3\S3Client;
+use Aws\ResultInterface;
+use DB\Mysql\MySqlMapper;
+use Aws\Exception\AwsException;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use GuzzleHttp\Promise\PromiseInterface;
+
+include "lib/functions.php";
 
 // Custom logger
 $dateFormatForLog = "Y-m-d\TH:i:sP";
@@ -19,10 +24,10 @@ if ( !is_dir(__DIR__ . '/logs')) {
     mkdir(__DIR__ . '/logs');
 }
 
-$streamForLog = new StreamHandler(__DIR__ . '/logs/migrateS3.log', Logger::DEBUG);
+$streamForLog = new StreamHandler(__DIR__ . '/logs/migrateS3-'. formatDate() .'.log', Logger::DEBUG);
 $streamForLog->setFormatter($formatterForLog);
 $migrateLogger = new Logger('mugrateS3');
-$migrateLogger->pushHandler($stream);
+$migrateLogger->pushHandler($streamForLog);
 
 $migrateLogger->info('Get all development environments');
 
@@ -72,7 +77,7 @@ $CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
 
 $DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
 
-$CONCURRENCY = 1000;
+$CONCURRENCY = 10;
 
 $migrateLogger->info('Connection to the database');
 $db = new MySqlMapper($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
@@ -93,22 +98,27 @@ $s3 = new S3Client([
     ],
     'endpoint'  => $_ENV['S3_ENDPOINT'],
     'signature_version' => 'v4',
-    'http' => [
-        'connect_timeout' => 0,
-        'delay' => 10000,
-    ],
 ]);
 
 
 /** Put user's files on a Object Storage server with concurrency.
 */
 $migrateLogger->info('Preparing to send users\' files asynchronously');
-$commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $localStorage, $DATADIRECTORY) {
+$commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $localStorage, $DATADIRECTORY, $migrateLogger) {
     foreach ($fileids as $fileid) {
         // fileCache : It contains the file list for each users.
         $fileCache = $db->getFileCache($fileid->fileid);
         // storage : It contains the home directory of users.
         $storage = $db->getStorage($fileCache->getStorage());
+
+        // Testing if the request return not a boolean
+        if (is_bool($storage)) {
+            $migrateLogger->error('The $db->getStorage() method return false ( ' . boolval($fileCache->getStorage()) . ' ), because the storage doesn\'t exist in the oc_storages table.');
+            $migrateLogger->error('The migrating is stopped. Please, deleted all files in your bucket and begin execute the program again.');
+            break;
+            die();
+        }
+
         // If it's an unix folder or for user local (ex: local::/data/nextcloud/)
         if ($fileCache->getMimeType() === $directoryUnix->id
         || $fileCache->getStorage() === $localStorage->numeric_id) {
