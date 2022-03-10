@@ -44,7 +44,7 @@ class MySqlMapper extends PDO {
     public function getStorages() {
         try {
 
-            $query = $this->query('select * from oc_storages where id not regexp "local"');
+            $query = $this->query('select * from oc_storages where id not regexp "local::"');
     
             return $query->fetchAll($this::FETCH_CLASS, 'Entity\\Storage');
             
@@ -63,7 +63,7 @@ class MySqlMapper extends PDO {
     public function getNumericIdStorages() {
         try {
 
-            $query = $this->query('select numeric_id from oc_storages where id not regexp "local"');
+            $query = $this->query('select numeric_id from oc_storages where id not regexp "local::"');
     
             return $query->fetchAll($this::FETCH_OBJ);
             
@@ -102,7 +102,7 @@ class MySqlMapper extends PDO {
     public function getLocalStorage() {
         try {
 
-            $query = $this->query('select * from oc_storages where id regexp "local"');
+            $query = $this->query('select * from oc_storages where id regexp "local::"');
     
             return $query->fetch();
             
