@@ -1,11 +1,16 @@
 {
+    "version": "0.8",
     "require": {
         "vlucas/phpdotenv": "^5.3",
-        "aws/aws-sdk-php": "^3.188"
+        "aws/aws-sdk-php": "^3.188",
+        "guzzlehttp/guzzle": "^7.4",
+        "monolog/monolog": "^2.3"
     },
     "autoload": {
         "psr-4": {
-            "DB\\Mysql\\" : "lib/Db/"
+            "DB\\Mysql\\" : "lib/Db/",
+            "Entities\\Storage\\": "lib/Entities",
+            "Entities\\Filecache\\": "lib/Entities"
         }
     }
 }

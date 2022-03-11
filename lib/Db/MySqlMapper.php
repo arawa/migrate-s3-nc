@@ -1,7 +1,9 @@
 <?php
 
-
 namespace DB\Mysql;
+
+require_once 'lib/Entities/Storage.php';
+require_once 'lib/Entities/Filecache.php';
 
 use PDO;
 use PDOException;
@@ -42,9 +44,9 @@ class MySqlMapper extends PDO {
     public function getStorages() {
         try {
 
-            $query = $this->query('select * from oc_storages where id not regexp "local"');
+            $query = $this->query('select * from oc_storages where id not regexp "local::"');
     
-            return $query->fetchAll();
+            return $query->fetchAll($this::FETCH_CLASS, 'Entity\\Storage');
             
         } catch(PDOException $e) {
 
@@ -52,6 +54,26 @@ class MySqlMapper extends PDO {
 
         }
     }
+
+        /**
+     * @return object where the fields are properties.
+     * local value is excluded.
+     * @example $listNumericId[0]->numeric_id
+     */
+    public function getNumericIdStorages() {
+        try {
+
+            $query = $this->query('select numeric_id from oc_storages where id not regexp "local::"');
+    
+            return $query->fetchAll($this::FETCH_OBJ);
+            
+        } catch(PDOException $e) {
+
+            die($e->getMessage());
+
+        }
+    }
+
 
     /**
      * update the id storage (not numeric_id)
@@ -80,7 +102,7 @@ class MySqlMapper extends PDO {
     public function getLocalStorage() {
         try {
 
-            $query = $this->query('select * from oc_storages where id regexp "local"');
+            $query = $this->query('select * from oc_storages where id regexp "local::"');
     
             return $query->fetch();
             
@@ -92,8 +114,26 @@ class MySqlMapper extends PDO {
     }
 
     /**
-     * @return array where the fields are properties.
-     * @example $filescache[0]->id
+     * @return Entity\Storage[]
+     * @example $storages[0]->getNumericId()
+     */
+    public function getStorage($numericId) {
+        try {
+
+            $query = $this->query('select * from oc_storages where numeric_id=' . $numericId);
+    
+            return $query->fetchObject('Entity\\Storage');
+            
+        } catch(PDOException $e) {
+
+            die($e->getMessage());
+
+        }
+    }
+
+    /**
+     * @return Entity\Filecache[]
+     * @example $filescache[0]->getId()
      */
     public function getFilesCache($idDirectoryUnix = null, $idLocalStorage = null) {
         try {
@@ -110,7 +150,7 @@ class MySqlMapper extends PDO {
 
             $query = $this->query('select * from oc_filecache ' . $args);
     
-            return $query->fetchAll();
+            return $query->fetchAll($this::FETCH_CLASS, 'Entity\\Filecache');
             
         } catch(PDOException $e) {
 
@@ -120,7 +160,25 @@ class MySqlMapper extends PDO {
     }
 
     /**
-     * @return object where the fiels are properties.
+     * @return Entity\Filecache
+     * @example $filecache->getId()
+     */
+    public function getFileCache($id) {
+        try {
+
+            $query = $this->query('select fileid,storage,path,mimetype from oc_filecache where fileid='. $id);
+    
+            return $query->fetchObject('Entity\\Filecache');
+            
+        } catch(PDOException $e) {
+
+            die($e->getMessage());
+
+        }
+    }
+
+    /**
+     * @return object where the fields are properties.
      * @example $filescaches[0]->id
      */
     public function getFilesCacheByOwner($idOwner, $idDirectoryUnix = null, $idLocalStorage = null) {
@@ -146,6 +204,69 @@ class MySqlMapper extends PDO {
             return $query->fetchAll();
             
         } catch(PDOException $e) {
+
+            die($e->getMessage());
+
+        }
+    }
+
+    /** @return object[] who are the fileid like propertie.
+     * @example $listFileId[0]->fileid
+	 * Note: query method return a PDOStatement which implements Traversable interface.
+	 * This interface is a low-level compared to Iterator interface.
+	 * 
+	 * @link https://www.php.net/manual/fr/class.traversable.php
+	 * @link https://www.julp.fr/articles/2-4-exploitation-des-donnees-de-requetes-select.html
+     */
+    public function getListObjectFileid($idDirectoryUnix = null, $idLocalStorage = null) {
+        try {
+
+            $sql = 'select fileid from oc_filecache';
+
+            $args = "";
+
+            if(! is_null($idDirectoryUnix)) {
+                $args = $args . "where not mimetype=$idDirectoryUnix";
+            }
+            
+            if(! is_null($idLocalStorage)) {
+                $args = $args . " and not storage=$idLocalStorage";
+            }
+
+            return $this->query($sql . ' ' . $args);
+
+        } catch (PDOException $e) {
+
+            die($e->getMessage());
+            
+        }
+    }
+
+
+    /** @return object[] who are the fileid lile propertie
+     * @example $listFileIdOfFoobar[0]->fileid
+     */
+    public function getListObjectFileidByOwner($storage,  $idDirectoryUnix = null) {
+		try {
+
+			if (is_null($storage)) {
+				print('Error, the $idOwner is not define.' . "\n");
+				exit();
+			}
+
+            $sql = 'select fileid from oc_filecache where storage=' . $storage;
+
+			$args = "";
+
+            if(! is_null($idDirectoryUnix)) {
+                $args = $args . " and not mimetype=$idDirectoryUnix";
+            }
+
+			$fullSql = $sql . $args;
+
+            return $this->query($fullSql);
+			
+        } catch (PDOException $e) {
 
             die($e->getMessage());
 

@@ -22,7 +22,7 @@ sudo systemctl stop apache2.service
 
 ```bash
 # scan your filesystem
-sudo -u <web-service> php occ files:scan
+sudo -u <web-service> php occ files:scan --all
 # cleanup your database
 sudo -u <web-service> php occ files:cleanup
 ```
