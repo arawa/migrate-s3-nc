@@ -4,7 +4,7 @@ It's a tool to migrate a structured database to S3 storage.
 
 # Before run
 
-First, you **must** stop the web service, the Nextcloud's **maintenance** and **backup** your database.
+First, you must build with composer command-line : `composer install` from the project folder. If you have not composer, follow this instruction page [to install composer](https://getcomposer.org/download/) . Then, you **must** stop the web service, the Nextcloud's **maintenance** and **backup** your database.
 Then, you must copy the `.env-sample` to `.env` file and you must define your config in `.env` file.
 
 ## Step 1 : Disabled your web service
@@ -40,7 +40,7 @@ sudo crontab -u apache -e
 sudo crontab -u apache2 -e
 ```
 
-# Step 4 : Enable the Nextxcloud's maintenance
+## Step 4 : Enable the Nextxcloud's maintenance
 
 ```bash
 cd /var/www/html/my-nextcloud-instance
