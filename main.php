@@ -129,7 +129,7 @@ $commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $
 
         yield $s3->getCommand('PutObject', [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
-            'Key'  => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
+            'Key'  => $storage->getUid() . '/' . basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
             'SourceFile' => $DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath(),
         ]);
 
@@ -154,10 +154,19 @@ $listObjectFileidOfLocalUser = $db->getListObjectFileidByOwner($localStorage->nu
 $explodePathLocalStorage =  explode('::', $localStorage->id);
 $pathLocalStorage = $explodePathLocalStorage[1];
 
+// Preparing the update the target datadirectory on object storage S3 server
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
+    $migrateLogger->info('Updating the target datadirectory for S3 Swift');
+    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
+} else {
+    $migrateLogger->info('Updating the target datadirectory for S3 Compatible');
+    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_PROVIDER_NAME']) . '::' . $_ENV['S3_BUCKET_NAME'];
+}
+
 /** Put files of local user on a Object Storage server with concurrency.
 */
 $migrateLogger->info('Preparing to send LocalUser\'s files asynchronously');
-$commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $pathLocalStorage) {
+$commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $pathLocalStorage, $newIdLocalStorage) {
     foreach($fileids as $fileidOfUserLocal) {
         // fileCache : It contains the file list for each users.
         $fileCache = $db->getFileCache($fileidOfUserLocal->fileid);
@@ -174,7 +183,7 @@ $commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $
 
             yield $s3->getCommand('PutObject', [
                 'Bucket' => $_ENV['S3_BUCKET_NAME'],
-                'Key'   => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
+                'Key'   => $newIdLocalStorage . '/' . basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
                 'SourceFile'    => $pathLocalStorage . $fileCache->getPath(),
             ]);
         }
@@ -207,14 +216,6 @@ foreach($NumericIdStorages as $NumericIdStorage ) {
     $db->updateIdStorage($storage->getNumericId(), $newIdStorage);
 }
 
-// Update the target datadirectory on object storage S3 server
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
-    $migrateLogger->info('Updating the target datadirectory for S3 Swift');
-    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
-} else {
-    $migrateLogger->info('Updating the target datadirectory for S3 Compatible');
-    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_PROVIDER_NAME']) . '::' . $_ENV['S3_BUCKET_NAME'];
-}
 $migrateLogger->info('Updating the Storage database table for LocalUser');
 $db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
 
