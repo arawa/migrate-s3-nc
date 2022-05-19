@@ -176,7 +176,7 @@ S3_PORT=""
 
 After all these, you can go in the `How to run ?` part !
 
-# How to run ?
+# <a name="how-to-run"/> How to run ?
 
 You must run this command to starting the migration :
 
@@ -231,6 +231,17 @@ Then, you must :
 
 - Dotenv : To set your config.
 - Aws SDK Php : To push your files.
+
+# How to purge the bucket ?
+
+You can purge your bucket with the purgeBucket.php file.
+It's very useful when your migration has been stopped abruptly.
+
+```bash
+php purgeBucket.php
+```
+
+🚨 Caution : This program deletes all objects in your bucket and you must rollback your database, in particular the `oc_storage` database table. Then, begin the migration from [How to run ?](#how-to-run) part.
 
 # Credits
 
