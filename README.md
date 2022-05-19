@@ -232,7 +232,7 @@ Then, you must :
 - Dotenv : To set your config.
 - Aws SDK Php : To push your files.
 
-# How to purge the bucket ?
+# How to purge the bucket ?
 
 You can purge your bucket with the purgeBucket.php file.
 It's very useful when your migration has been stopped abruptly.
