@@ -260,6 +260,7 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
             'port'  => intval($_ENV['S3_PORT']),
             'use_ssl'   => true,
             'region'    => strtolower($_ENV['S3_REGION']),
+            'use_path_style' => true
 	    ]
     ];
 }
