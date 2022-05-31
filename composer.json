@@ -1,5 +1,5 @@
 {
-    "version": "0.8",
+    "version": "0.9",
     "require": {
         "vlucas/phpdotenv": "^5.3",
         "aws/aws-sdk-php": "^3.188",
