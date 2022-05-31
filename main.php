@@ -213,7 +213,7 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
 } else {
     $migrateLogger->info('Updating the target datadirectory for S3 Compatible');
-    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_PROVIDER_NAME']) . '::' . $_ENV['S3_BUCKET_NAME'];
+    $newIdLocalStorage = 'object::store:amazon::' . $_ENV['S3_BUCKET_NAME'];
 }
 $migrateLogger->info('Updating the Storage database table for LocalUser');
 $db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
@@ -221,7 +221,6 @@ $db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');
 $NEW_CONFIG_NEXTCLOUD = $CONFIG_NEXTCLOUD; // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
-$NEW_CONFIG_NEXTCLOUD['maintenance'] = false;
 if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
         'class' => 'OC\\Files\\ObjectStore\\Swift',
