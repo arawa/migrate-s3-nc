@@ -8,6 +8,11 @@ If you have not composer, follow this instruction page [to install composer](htt
 
 It's very important to build this project.
 
+```bash
+cd migrate-s3-nc
+composer install
+```
+
 ## Step 1 : Disabled your web service
 
 You **must** stop the web service to ensure that no one or a technical user use Nextcloud.
