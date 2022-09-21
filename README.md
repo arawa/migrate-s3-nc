@@ -4,6 +4,12 @@ It's a tool to migrate a structured database to S3 storage.
 
 # Requirement
 
+First, you must get this project with git or download it in zip format.
+
+```bash
+git clone https://github.com/arawa/migrate-s3-nc.git
+```
+
 If you have not composer, follow this instruction page [to install composer](https://getcomposer.org/download/) . 
 
 It's very important to build this project.
@@ -32,7 +38,7 @@ sudo systemctl stop httpd.service
 Use the `files_scan.sh` script from the project folder to scan the filesystem of Nextcloud :
 
 ```bash
-# scrip to scan your filesystem of nextcloud
+# script to scan your filesystem of nextcloud
 ./files_scan.sh /var/www/html/nextcloud <web-user> 
 ```
 
