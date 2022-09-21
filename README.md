@@ -4,6 +4,12 @@ It's a tool to migrate a structured database to S3 storage.
 
 # Requirement
 
+First, you must get this project with git or download it in zip format.
+
+```bash
+git clone https://github.com/arawa/migrate-s3-nc.git
+```
+
 If you have not composer, follow this instruction page [to install composer](https://getcomposer.org/download/) . 
 
 It's very important to build this project.
@@ -32,7 +38,7 @@ sudo systemctl stop httpd.service
 Use the `files_scan.sh` script from the project folder to scan the filesystem of Nextcloud :
 
 ```bash
-# scrip to scan your filesystem of nextcloud
+# script to scan your filesystem of nextcloud
 ./files_scan.sh /var/www/html/nextcloud <web-user> 
 ```
 
@@ -253,6 +259,9 @@ You must run this command to starting the migration :
 ```bash
 $ php main.php
 ```
+
+⚠️ Be careful : The migration could take hours or days. I advise you to use the [byobu](https://www.byobu.org/) app to have a virtual session and exit to leave your terminal whenever you want.
+Here is a [cheat sheet](https://gist.github.com/devhero/7b9a7281db0ac4ba683f) to navigate in byobu.
 
 After its execution, it prints this message :
 
