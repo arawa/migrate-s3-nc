@@ -260,6 +260,9 @@ You must run this command to starting the migration :
 $ php main.php
 ```
 
+⚠️ Be careful : The migration could take hours or days. I advise you to use the [byobu](https://www.byobu.org/) app to have a virtual session and exit to leave your terminal whenever you want.
+Here is a [cheat sheet](https://gist.github.com/devhero/7b9a7281db0ac4ba683f) to navigate in byobu.
+
 After its execution, it prints this message :
 
 ```
