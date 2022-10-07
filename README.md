@@ -33,6 +33,9 @@ sudo systemctl stop apache2.service
 # apache (CentOS based)
 sudo systemctl stop httpd.service
 ```
+
+⚠️ **NOTE** : If you have a web cluster. You must enter this command on the others servers in the cluster.
+
 ## Step 2 : Check your files & database
 
 Use the `files_scan.sh` script from the project folder to scan the filesystem of Nextcloud :
@@ -51,11 +54,15 @@ Go to Nextcloud folder, example : `/var/www/html/nextcloud`, to use occ command 
 sudo -u <web-user> php occ files:cleanup
 ```
 
+⚠️ **NOTE** : I think you need to enter the commands for this step on the others servers in the web cluster if you have one.
+
 ## Step 3 : Comment your cron tasks for Nextcloud
 
 ```bash
 sudo crontab -u <web-user> -e
 ```
+
+⚠️ **NOTE** : I think you need to enter this command for this step on the others servers in the web cluster if you have one.
 
 ## Step 4 : Enable the Nextxcloud's maintenance
 
@@ -67,6 +74,8 @@ sudo -u <web-user> php occ maintenance:mode --on
 ```
 
 This step is **very important**. Otherwise, your Nextcloud will recreate the storages in the `oc_storages` database table.
+
+⚠️ **NOTE** : You must enter this command on the others servers in the web cluster if you have one.
 
 ## Step 5 : backup your database
 
@@ -85,6 +94,8 @@ mysqldump --user <user-database> --password <database-name> oc_storages > <datab
 If you have a problem with the migration, **you can just rollback this database table** and not the entire database.
 
 Now, you can configure your `.env` file.
+
+⚠️ **NOTE** : I think for this step you don't need to enter these commands on all the servers in your web cluster if you have one.
 
 ## Configure `.env` file
 
@@ -263,6 +274,8 @@ $ php main.php
 ⚠️ Be careful : The migration could take hours or days. I advise you to use the [byobu](https://www.byobu.org/) app to have a virtual session and exit to leave your terminal whenever you want.
 Here is a [cheat sheet](https://gist.github.com/devhero/7b9a7281db0ac4ba683f) to navigate in byobu.
 
+⚠️ **NOTE** : You must enter this command on one of the servers in your web cluster if you have one.
+
 After its execution, it prints this message :
 
 ```
@@ -274,6 +287,8 @@ Please, check if it's new config is correct !
 It means the script has run with success !
 
 You must check the good config in the `new_config.php` file before replace it with the Nextcloud's `config.php` file.
+
+⚠️ **NOTE** : I think you need to move the `new_config.php` to `config.php` on all the servers in your web cluster if you have one.
 
 Once the copy is done. You can check in your `oc_storages` database table if it's correct :
 
@@ -306,6 +321,9 @@ php purgeBucket.php
 ```
 
 🚨 Caution : This program deletes all objects in your bucket and you must rollback your database, in particular the `oc_storage` database table. Then, begin the migration from [How to run ?](#how-to-run) part.
+
+⚠️ **NOTE** : I think you can run this command on one of the servers in your web cluster if you have one.
+
 
 # Credits
 
