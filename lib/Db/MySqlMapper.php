@@ -32,7 +32,8 @@ class MySqlMapper extends PDO {
         // ERRMODE_EXCEPTION allows be define exceptions as errors.
         parent::__construct($this->dsn, $this->USER, $this->PASSWORD,  [
             $this::ATTR_ERRMODE => $this::ERRMODE_EXCEPTION,
-            $this::ATTR_DEFAULT_FETCH_MODE => $this::FETCH_OBJ
+            $this::ATTR_DEFAULT_FETCH_MODE => $this::FETCH_OBJ,
+            $this::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
         ]);
     }
     
