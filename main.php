@@ -6,12 +6,12 @@ use Dotenv\Dotenv;
 use Monolog\Logger;
 use Aws\CommandPool;
 use Aws\S3\S3Client;
-use Aws\ResultInterface;
-use DB\Mysql\MySqlMapper;
-use Aws\Exception\AwsException;
+use Db\DatabaseSingleton;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
-use GuzzleHttp\Promise\PromiseInterface;
+use Managers\FileLocalStorageManager;
+use Managers\FileUserManager;
+use Managers\StorageManager;
 
 include "lib/functions.php";
 
@@ -79,16 +79,6 @@ $DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
 
 $CONCURRENCY = 10;
 
-$migrateLogger->info('Connection to the database');
-$db = new MySqlMapper($_ENV['MYSQL_DATABASE_HOST'], $_ENV['MYSQL_DATABASE_SCHEMA'], $_ENV['MYSQL_DATABASE_USER'], $_ENV['MYSQL_DATABASE_PASSWORD']);
-
-$directoryUnix = $db->getUnixDirectoryMimeType();
-
-$localStorage = $db->getLocalStorage();
-
-$migrateLogger->info('Recovery of all users\' fileids');
-$listObjectFileid = $db->getListObjectFileid();
-
 $s3 = new S3Client([
     'version'   => '2006-03-01',
     'region'    => $_ENV['S3_REGION'],
@@ -100,43 +90,26 @@ $s3 = new S3Client([
     'signature_version' => 'v4',
 ]);
 
+$fileManager = new FileUserManager();
 
 /** Put user's files on a Object Storage server with concurrency.
 */
 $migrateLogger->info('Preparing to send users\' files asynchronously');
-$commandGeneratorForUsers = function ($fileids) use ($s3, $db, $directoryUnix, $localStorage, $DATADIRECTORY, $migrateLogger) {
-    foreach ($fileids as $fileid) {
-        // fileCache : It contains the file list for each users.
-        $fileCache = $db->getFileCache($fileid->fileid);
-        // storage : It contains the home directory of users.
-        $storage = $db->getStorage($fileCache->getStorage());
-
-        // Testing if the request return not a boolean
-        if (is_bool($storage)) {
-            $migrateLogger->error('The $db->getStorage() method return false ( ' . boolval($fileCache->getStorage()) . ' ), because the storage doesn\'t exist in the oc_storages table.');
-            $migrateLogger->error('The migrating is stopped. Please, deleted all files in your bucket and begin execute the program again.');
-            break;
-            die();
-        }
-
-        // If it's an unix folder or for user local (ex: local::/data/nextcloud/)
-        if ($fileCache->getMimeType() === $directoryUnix->id
-        || $fileCache->getStorage() === $localStorage->numeric_id) {
-            continue;
-        }
-
-        $dirname = dirname($DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath());
-
+$commandGeneratorForUsers = function (array $filesUser) use ($s3) {
+    foreach ($filesUser as $fileUser) {
         yield $s3->getCommand('PutObject', [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
-            'Key'  => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
-            'SourceFile' => $DATADIRECTORY . '/' . $storage->getUid() . '/' . $fileCache->getPath(),
+            'Key'  => basename($fileUser->getDirname() . '/urn:oid:' . $fileUser->getFileid()),
+            'SourceFile' => $fileUser->getAbsolutePath(),
         ]);
 
     }
 };
 
-$commandsForUsers = $commandGeneratorForUsers($listObjectFileid);
+$fileUsers = $fileManager->getAll();
+DatabaseSingleton::getInstance()->close();
+
+$commandsForUsers = $commandGeneratorForUsers($fileUsers);
 
 // Creating pool for users
 $poolForUsers = new CommandPool($s3, $commandsForUsers, [
@@ -149,40 +122,29 @@ $promiseForUsers = $poolForUsers->promise();
 
 /** Put files of local user on a Object Storage server with promise.
 */
-$migrateLogger->info('Recovery of all LocalUser\'s fileids');
-$listObjectFileidOfLocalUser = $db->getListObjectFileidByOwner($localStorage->numeric_id, $directoryUnix->id);
-$explodePathLocalStorage =  explode('::', $localStorage->id);
-$pathLocalStorage = $explodePathLocalStorage[1];
+DatabaseSingleton::getInstance()->reopen();
+$filesLocalStorageManager = new FileLocalStorageManager();
 
 /** Put files of local user on a Object Storage server with concurrency.
 */
 $migrateLogger->info('Preparing to send LocalUser\'s files asynchronously');
-$commandGeneratorForLocal = function ($fileids) use ($s3, $db, $directoryUnix, $pathLocalStorage) {
-    foreach($fileids as $fileidOfUserLocal) {
-        // fileCache : It contains the file list for each users.
-        $fileCache = $db->getFileCache($fileidOfUserLocal->fileid);
-    
-        if ($fileCache->getMimeType() === $directoryUnix->id) {
+$commandGeneratorForLocal = function ($filesLocalUserIterator) use ($s3) {
+    foreach($filesLocalUserIterator as $fileLocalUser) {
+        if (!file_exists($fileLocalUser->getAbsolutePath())) {
             continue;
         }
-    
-        if (file_exists($pathLocalStorage . $fileCache->getPath())) {
-            // storage : It contains the home directory of users.
-            $storage = $db->getStorage($fileCache->getStorage());
-    
-            $dirname = dirname($pathLocalStorage . $fileCache->getPath());
 
-            yield $s3->getCommand('PutObject', [
-                'Bucket' => $_ENV['S3_BUCKET_NAME'],
-                'Key'   => basename($dirname . '/urn:oid:' . $fileCache->getFileid()),
-                'SourceFile'    => $pathLocalStorage . $fileCache->getPath(),
-            ]);
-        }
+        yield $s3->getCommand('PutObject', [
+            'Bucket' => $_ENV['S3_BUCKET_NAME'],
+            'Key'   => basename($fileLocalUser->getDirname() . '/urn:oid:' . $fileLocalUser->getFileid()),
+            'SourceFile'    => $fileLocalUser->getAbsolutePath(),
+        ]);
     }
 };
 
-
-$commandsForLocal = $commandGeneratorForLocal($listObjectFileidOfLocalUser);
+$filesLocalStorage = $filesLocalStorageManager->getAll();
+DatabaseSingleton::getInstance()->close();
+$commandsForLocal = $commandGeneratorForLocal($filesLocalStorage);
 // Creating pool for users
 $poolForLocal = new CommandPool($s3, $commandsForLocal, [
     'concurrency' => $CONCURRENCY,
@@ -197,14 +159,17 @@ $migrateLogger->info('Waitting promises');
 $promiseForUsers->wait();
 $promiseForLocal->wait();
 
+DatabaseSingleton::getInstance()->reopen();
+$storageManager = new StorageManager();
+
 // Update the oc_storages database table.
 // Excepted local user.
 $migrateLogger->info('Updating the Storage database table foreach users');
-$NumericIdStorages = $db->getNumericIdStorages();
-foreach($NumericIdStorages as $NumericIdStorage ) {
-    $storage = $db->getStorage($NumericIdStorage->numeric_id);
+$numericIdStorages = $storageManager->getAllNumericId();
+foreach($numericIdStorages as $numericIdStorage ) {
+    $storage = $storageManager->get($numericIdStorage->numeric_id);
     $newIdStorage = 'object::user:' . $storage->getUid();
-    $db->updateIdStorage($storage->getNumericId(), $newIdStorage);
+    $storageManager->updateId($storage->getNumericId(), $newIdStorage);
 }
 
 // Update the target datadirectory on object storage S3 server
@@ -216,7 +181,8 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
     $newIdLocalStorage = 'object::store:amazon::' . $_ENV['S3_BUCKET_NAME'];
 }
 $migrateLogger->info('Updating the Storage database table for LocalUser');
-$db->updateIdStorage($localStorage->numeric_id, $newIdLocalStorage);
+$localStorage = $storageManager->getLocalStorage();
+$storageManager->updateId($localStorage->numeric_id, $newIdLocalStorage);
 
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');
@@ -267,7 +233,8 @@ if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
 // Creating a new_config.php file and move it by the Nextcloud's config.php file user side.
 file_put_contents(__DIR__ . '/new_config.php', "<?php\n" . '$CONFIG = ' . var_export($NEW_CONFIG_NEXTCLOUD, true) . ';');
 
-print("\nCongrulation ! The migration is done !\n");
+print("\nCongrulation ! The migration is done ! 🎉 🪣\n");
 print("You should move the new_config.php file and replace Nextcloud's config.php file with it.\n");
 print("Please, check if it's new config is correct !\n\n");
+DatabaseSingleton::getInstance()->close();
 $migrateLogger->info('It\'s over');
