@@ -29,9 +29,15 @@ class MySqlMapper
     public function getNumericIdStorages() {
         try {
 
+            $this->database->open();
+
             $query = $this->database->getPdo()->query('select numeric_id from oc_storages where id not regexp "local::"');
     
-            return $query->fetchAll($this->database->getPdo()::FETCH_OBJ);
+            $result = $query->fetchAll($this->database->getPdo()::FETCH_OBJ);
+            
+            $this->database->close();
+
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -47,11 +53,15 @@ class MySqlMapper
         // update
         try {
 
+            $this->database->open();
+
             $query = $this->database->getPdo()->prepare('update oc_storages set id=:id where numeric_id=:numeric_id');
             $query->execute([
                 'id'    => $newId,
                 'numeric_id'    => $numericId
             ]);
+
+            $this->database->close();
 
         } catch(PDOException $e) {
 
@@ -67,9 +77,15 @@ class MySqlMapper
     public function getLocalStorage() {
         try {
 
+            $this->database->open();
+            
             $query = $this->database->getPdo()->query('select * from oc_storages where id regexp "local::"');
     
-            return $query->fetch();
+            $result = $query->fetch();
+            
+            $this->database->close();
+
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -85,9 +101,15 @@ class MySqlMapper
     public function getStorage($numericId) {
         try {
 
+            $this->database->open();
+            
             $query = $this->database->getPdo()->query('select * from oc_storages where numeric_id=' . $numericId);
     
-            return $query->fetchObject('Entity\\Storage');
+            $result = $query->fetchObject('Entity\\Storage');
+
+            $this->database->close();
+            
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -104,6 +126,8 @@ class MySqlMapper
     public function getFilesUsers(string $IdMimetype = null, string $IdStorage = null) {
         try {
 
+            $this->database->open();
+            
             $args = "where oc_filecache.storage=oc_storages.numeric_id ";
 
             if(! is_null($IdMimetype)) {
@@ -124,7 +148,12 @@ class MySqlMapper
 
             $query = $this->database->getPdo()->query($request);
     
-            return $query->fetchAll($this->database->getPdo()::FETCH_CLASS, FileUsers::class);
+            
+            $result = $query->fetchAll($this->database->getPdo()::FETCH_CLASS, FileUsers::class);
+
+            $this->database->close();
+
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -142,6 +171,8 @@ class MySqlMapper
     public function getFilesLocalStorage(string $IdMimetype = null, string $IdStorage = null) {
         try {
 
+            $this->database->open();
+            
             $args = "where oc_filecache.storage=oc_storages.numeric_id ";
 
             if(! is_null($IdMimetype)) {
@@ -161,8 +192,13 @@ class MySqlMapper
                 from oc_filecache, oc_storages ' . $args;
 
             $query = $this->database->getPdo()->query($request);
-    
-            return $query->fetchAll($this->database->getPdo()::FETCH_CLASS, FileLocalStorage::class);
+
+
+            $result = $query->fetchAll($this->database->getPdo()::FETCH_CLASS, FileLocalStorage::class);
+
+            $this->database->close();
+
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -184,6 +220,8 @@ class MySqlMapper
 				exit();
 			}
 
+            $this->database->open();
+
             $args = "where storage=$idOwner";
 
             if(! is_null($idDirectoryUnix)) {
@@ -195,8 +233,11 @@ class MySqlMapper
             }
 
             $query = $this->database->getPdo()->query('select * from oc_filecache ' . $args);
+            $result = $query->fetchAll();
     
-            return $query->fetchAll();
+            $this->database->close();
+            
+            return $result;
             
         } catch(PDOException $e) {
 
@@ -217,6 +258,8 @@ class MySqlMapper
     public function getListObjectFileid($idDirectoryUnix = null, $idLocalStorage = null) {
         try {
 
+            $this->database->open();
+
             $sql = 'select fileid from oc_filecache';
 
             $args = "";
@@ -229,7 +272,11 @@ class MySqlMapper
                 $args = $args . " and not storage=$idLocalStorage";
             }
 
-            return $this->database->getPdo()->query($sql . ' ' . $args);
+            $result = $this->database->getPdo()->query($sql . ' ' . $args);
+
+            $this->database->close();
+
+            return $result;
 
         } catch (PDOException $e) {
 
@@ -250,6 +297,8 @@ class MySqlMapper
 				exit();
 			}
 
+            $this->database->open();
+
             $sql = 'select fileid from oc_filecache where storage=' . $storage;
 
 			$args = "";
@@ -260,7 +309,11 @@ class MySqlMapper
 
 			$fullSql = $sql . $args;
 
-            return $this->database->getPdo()->query($fullSql);
+            $this->database->close();
+
+            $result = $this->database->getPdo()->query($fullSql);
+            
+            return $result;
 			
         } catch (PDOException $e) {
 
@@ -276,9 +329,15 @@ class MySqlMapper
     public function getUnixDirectoryMimeType() {
         try {
 
+            $this->database->open();
+
             $query = $this->database->getPdo()->query('select * from oc_mimetypes where mimetype="httpd/unix-directory"');
     
-            return $query->fetch();
+            $result = $query->fetch();
+            
+            $this->database->close();
+
+            return $result;
             
         } catch(PDOException $e) {
 

@@ -36,7 +36,7 @@ class DatabaseSingleton
         $this->pdo = null;
     }
 
-    public function reopen(): void
+    public function open(): void
     {
         if (is_null($this->pdo))
         {

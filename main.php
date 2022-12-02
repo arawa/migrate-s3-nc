@@ -107,7 +107,6 @@ $commandGeneratorForUsers = function (array $filesUser) use ($s3) {
 };
 
 $fileUsers = $fileManager->getAll();
-DatabaseSingleton::getInstance()->close();
 
 $commandsForUsers = $commandGeneratorForUsers($fileUsers);
 
@@ -122,7 +121,6 @@ $promiseForUsers = $poolForUsers->promise();
 
 /** Put files of local user on a Object Storage server with promise.
 */
-DatabaseSingleton::getInstance()->reopen();
 $filesLocalStorageManager = new FileLocalStorageManager();
 
 /** Put files of local user on a Object Storage server with concurrency.
@@ -143,7 +141,6 @@ $commandGeneratorForLocal = function ($filesLocalUserIterator) use ($s3) {
 };
 
 $filesLocalStorage = $filesLocalStorageManager->getAll();
-DatabaseSingleton::getInstance()->close();
 $commandsForLocal = $commandGeneratorForLocal($filesLocalStorage);
 // Creating pool for users
 $poolForLocal = new CommandPool($s3, $commandsForLocal, [
@@ -159,7 +156,6 @@ $migrateLogger->info('Waitting promises');
 $promiseForUsers->wait();
 $promiseForLocal->wait();
 
-DatabaseSingleton::getInstance()->reopen();
 $storageManager = new StorageManager();
 
 // Update the oc_storages database table.
@@ -236,5 +232,4 @@ file_put_contents(__DIR__ . '/new_config.php', "<?php\n" . '$CONFIG = ' . var_ex
 print("\nCongrulation ! The migration is done ! 🎉 🪣\n");
 print("You should move the new_config.php file and replace Nextcloud's config.php file with it.\n");
 print("Please, check if it's new config is correct !\n\n");
-DatabaseSingleton::getInstance()->close();
 $migrateLogger->info('It\'s over');
