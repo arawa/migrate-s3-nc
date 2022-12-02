@@ -27,7 +27,7 @@ class S3Manager
         ]);
     }
 
-    public function generatorPubObject($files): Generator
+    public function generatorPubObject(array $files): Generator
     {
         foreach ($files as $file) {
             yield $this->s3->getCommand('PutObject', [
@@ -38,7 +38,7 @@ class S3Manager
         }
     }
 
-    public function pool($commands): CommandPool
+    public function pool(Generator $commands): CommandPool
     {
         return new CommandPool($this->s3, $commands, [
             'concurrency' => self::CONCURRENCY,
