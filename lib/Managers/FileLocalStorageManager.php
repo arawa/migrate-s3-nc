@@ -4,6 +4,7 @@ namespace Managers;
 
 use Db\Mapper\MySqlMapper;
 use Iterator\FilesLocalStorageIterator;
+use NextcloudConfiguration\NextcloudConfiguration;
 
 class FileLocalStorageManager
 {
@@ -22,13 +23,7 @@ class FileLocalStorageManager
         $directoryUnix = $this->mysqlMapper->getUnixDirectoryMimeType();
         $localStorage = $this->mysqlMapper->getLocalStorage();
 
-        require $_ENV['NEXTCLOUD_FOLDER_PATH'] . $_ENV['NEXTCLOUD_CONFIG_PATH'];
-
-        $NEXTCLOUD_VARIABLES_CONFIG = get_defined_vars();
-        
-        $CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
-        
-        $dataDirectory = $CONFIG_NEXTCLOUD['datadirectory'];
+        $dataDirectory = NextcloudConfiguration::getInstance()->getDataDirectory();
 
         $files = $this->mysqlMapper->getFilesLocalStorage($directoryUnix->id, $localStorage->numeric_id);
         $newFiles = [];

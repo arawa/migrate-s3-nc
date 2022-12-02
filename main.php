@@ -2,15 +2,15 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Monolog\Logger;
-use Aws\CommandPool;
-use Aws\S3\S3Client;
 use Environment\Environment;
-use Monolog\Handler\StreamHandler;
-use Monolog\Formatter\LineFormatter;
 use Managers\FileLocalStorageManager;
 use Managers\FileUserManager;
 use Managers\StorageManager;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use NextcloudConfiguration\NextcloudConfiguration;
+use S3\S3Manager;
 
 include "lib/functions.php";
 
@@ -32,84 +32,23 @@ $migrateLogger->info('Get all development environments');
 
 Environment::load();
 
-$CONCURRENCY = 10;
-
-$s3 = new S3Client([
-    'version'   => '2006-03-01',
-    'region'    => $_ENV['S3_REGION'],
-    'credentials'   => [
-        'key'   => $_ENV['S3_KEY'],
-        'secret'    =>  $_ENV['S3_SECRET'],
-    ],
-    'endpoint'  => $_ENV['S3_ENDPOINT'],
-    'signature_version' => 'v4',
-]);
-
 $fileManager = new FileUserManager();
-
-/** Put user's files on a Object Storage server with concurrency.
-*/
-$migrateLogger->info('Preparing to send users\' files asynchronously');
-$commandGeneratorForUsers = function (array $filesUser) use ($s3) {
-    foreach ($filesUser as $fileUser) {
-        yield $s3->getCommand('PutObject', [
-            'Bucket' => $_ENV['S3_BUCKET_NAME'],
-            'Key'  => basename($fileUser->getDirname() . '/urn:oid:' . $fileUser->getFileid()),
-            'SourceFile' => $fileUser->getAbsolutePath(),
-        ]);
-
-    }
-};
-
-$fileUsers = $fileManager->getAll();
-
-$commandsForUsers = $commandGeneratorForUsers($fileUsers);
-
-// Creating pool for users
-$poolForUsers = new CommandPool($s3, $commandsForUsers, [
-    'concurrency' => $CONCURRENCY,
-]);
-
-// Creating promises for users
-$migrateLogger->info('Start uploading files to the S3 server for users');
-$promiseForUsers = $poolForUsers->promise();
-
-/** Put files of local user on a Object Storage server with promise.
-*/
 $filesLocalStorageManager = new FileLocalStorageManager();
 
-/** Put files of local user on a Object Storage server with concurrency.
-*/
-$migrateLogger->info('Preparing to send LocalUser\'s files asynchronously');
-$commandGeneratorForLocal = function ($filesLocalUserIterator) use ($s3) {
-    foreach($filesLocalUserIterator as $fileLocalUser) {
-        if (!file_exists($fileLocalUser->getAbsolutePath())) {
-            continue;
-        }
+$s3Manager = new S3Manager();
+$commands = $s3Manager->generatorPubObject(
+    array_merge(
+        $fileManager->getAll(),
+        $filesLocalStorageManager->getAll()
+    )
+);
 
-        yield $s3->getCommand('PutObject', [
-            'Bucket' => $_ENV['S3_BUCKET_NAME'],
-            'Key'   => basename($fileLocalUser->getDirname() . '/urn:oid:' . $fileLocalUser->getFileid()),
-            'SourceFile'    => $fileLocalUser->getAbsolutePath(),
-        ]);
-    }
-};
-
-$filesLocalStorage = $filesLocalStorageManager->getAll();
-$commandsForLocal = $commandGeneratorForLocal($filesLocalStorage);
-// Creating pool for users
-$poolForLocal = new CommandPool($s3, $commandsForLocal, [
-    'concurrency' => $CONCURRENCY,
-]);
-
-// Creating promises for local
-$migrateLogger->info('Start uploading files to the S3 server for the UserLocal');
-$promiseForLocal = $poolForLocal->promise();
+$pool = $s3Manager->pool($commands);
+$promise = $pool->promise();
 
 // Waitting promises
 $migrateLogger->info('Waitting promises');
-$promiseForUsers->wait();
-$promiseForLocal->wait();
+$promise->wait();
 
 $storageManager = new StorageManager();
 
@@ -137,7 +76,7 @@ $storageManager->updateId($localStorage->numeric_id, $newIdLocalStorage);
 
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');
-$NEW_CONFIG_NEXTCLOUD = $CONFIG_NEXTCLOUD; // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
+$NEW_CONFIG_NEXTCLOUD = NextcloudConfiguration::getInstance()->getConfig(); // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
 if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
     $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
         'class' => 'OC\\Files\\ObjectStore\\Swift',
