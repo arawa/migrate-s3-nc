@@ -20,7 +20,6 @@ class Storage
             $idExplode = explode('::', $this->id);
             $this->uid = $idExplode[1];
         }
-
     }
 
     public function getId() {

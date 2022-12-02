@@ -1,5 +1,8 @@
 {
     "version": "0.9",
+    "scripts": {
+        "autoload": "composer dump-autoload"
+    },
     "require": {
         "vlucas/phpdotenv": "^5.3",
         "aws/aws-sdk-php": "^3.188",
@@ -8,9 +11,15 @@
     },
     "autoload": {
         "psr-4": {
-            "DB\\Mysql\\" : "lib/Db/",
+            "Db\\": "lib/Db",
+            "Db\\Mapper\\" : "lib/Db/Mapper",
+            "Db\\Mapper\\MysqlMapper\\" : "lib/Db/Mapper",
+            "Db\\Pdo\\" : "lib/Db/Pdo",
+            "Db\\Pdo\\MySqlPDO\\" : "lib/Db/Pdo",
             "Entities\\Storage\\": "lib/Entities",
-            "Entities\\Filecache\\": "lib/Entities"
+            "Entities\\File\\": "lib/Entities",
+            "Iterator\\": "lib/Iterators",
+            "Managers\\": "lib/Managers"
         }
     }
 }

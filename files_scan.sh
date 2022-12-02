@@ -26,4 +26,6 @@ for uid in ${uids[@]}; do
     sudo -u $user_web php $path_nextcloud/occ files:scan $uid
 done
 
+sudo -u $user_web php $path_nextcloud/occ files:scan-app-data
+
 echo -e "\n\nIt's done !"

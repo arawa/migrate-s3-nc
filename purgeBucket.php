@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Aws\CommandPool;
 use Aws\S3\S3Client;
 
 use Dotenv\Dotenv;
@@ -48,20 +49,24 @@ $s3 = new S3Client([
 
 $objects = getObjects($s3);
 
-while (CheckBucketIsEmpty($objects['Contents'])) {
-
-    foreach($objects['Contents'] as $object) {
-        // To decomment if you would see the object deleted in your terminal.
-        // Caution : This can slow the program.
-        // print($object['Key']."\n");
-        $s3->deleteObject([
+$generatorDeleteObject = function ($objects) use ($s3)
+{
+    foreach($objects['Contents'] as $object)
+    {
+        yield $s3->getCommand('deleteObject', [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
             'Key'   => $object['Key']
         ]);
     }
+};
 
-    $objects = getObjects($s3);
-    
+while (CheckBucketIsEmpty($objects['Contents'])) {
+
+    $generator = $generatorDeleteObject($objects);
+    $pool = new CommandPool($s3, $generator);
+    $pool->promise();
+
+    $objects = getObjects($s3);    
     if (empty($objects['Contents'])) {
         print("\nNothing objects in your bucket ! 🪣\n");
         break;
