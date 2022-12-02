@@ -18,6 +18,7 @@
             "Db\\Pdo\\MySqlPDO\\" : "lib/Db/Pdo",
             "Entities\\Storage\\": "lib/Entities",
             "Entities\\File\\": "lib/Entities",
+            "Environment\\": "lib/",
             "Iterator\\": "lib/Iterators",
             "Managers\\": "lib/Managers"
         }
