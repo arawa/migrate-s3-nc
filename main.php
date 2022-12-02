@@ -2,11 +2,10 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Dotenv\Dotenv;
 use Monolog\Logger;
 use Aws\CommandPool;
 use Aws\S3\S3Client;
-use Db\DatabaseSingleton;
+use Environment\Environment;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 use Managers\FileLocalStorageManager;
@@ -31,51 +30,7 @@ $migrateLogger->pushHandler($streamForLog);
 
 $migrateLogger->info('Get all development environments');
 
-$dotenv = Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-$dotenv->required('NEXTCLOUD_FOLDER_PATH')->notEmpty();
-$dotenv->required('NEXTCLOUD_CONFIG_PATH')->notEmpty();
-$dotenv->required('MYSQL_DATABASE_SCHEMA')->notEmpty();
-$dotenv->required('MYSQL_DATABASE_USER')->notEmpty();
-$dotenv->required('MYSQL_DATABASE_PASSWORD')->notEmpty();
-$dotenv->required('MYSQL_DATABASE_HOST')->notEmpty();
-$dotenv->required('S3_PROVIDER_NAME')->notEmpty();
-
-$PROVIDERS_S3_SWIFT = ['openstack', 'swift', 'ovh'];
-
-// Required the good env vars.
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
-    $migrateLogger->info('The S3 server is Swift');
-    $dotenv->required('S3_ENDPOINT')->notEmpty();
-    $dotenv->required('S3_SWIFT_URL')->notEmpty();
-    $dotenv->required('S3_REGION')->notEmpty();
-    $dotenv->required('S3_SWIFT_USERNAME')->notEmpty();
-    $dotenv->required('S3_KEY')->notEmpty();
-    $dotenv->required('S3_SECRET')->notEmpty();
-    $dotenv->required('S3_SWIFT_PASSWORD')->notEmpty();
-    $dotenv->required('S3_BUCKET_NAME')->notEmpty();
-    $dotenv->required('S3_SWIFT_ID_PROJECT')->notEmpty();
-
-} else {
-    $migrateLogger->info('The S3 server is S3 Compatbile');
-    $dotenv->required('S3_ENDPOINT')->notEmpty();
-    $dotenv->required('S3_REGION')->notEmpty();
-    $dotenv->required('S3_KEY')->notEmpty();
-    $dotenv->required('S3_SECRET')->notEmpty();
-    $dotenv->required('S3_HOSTNAME')->notEmpty();
-    $dotenv->required('S3_BUCKET_NAME')->notEmpty();
-}
-
-require $_ENV['NEXTCLOUD_FOLDER_PATH'] . $_ENV['NEXTCLOUD_CONFIG_PATH'];
-
-
-$migrateLogger->info('Get Nextcloud\'s config');
-$NEXTCLOUD_VARIABLES_CONFIG = get_defined_vars();
-
-$CONFIG_NEXTCLOUD = $NEXTCLOUD_VARIABLES_CONFIG['CONFIG'];
-
-$DATADIRECTORY = $CONFIG_NEXTCLOUD['datadirectory'];
+Environment::load();
 
 $CONCURRENCY = 10;
 
@@ -169,7 +124,7 @@ foreach($numericIdStorages as $numericIdStorage ) {
 }
 
 // Update the target datadirectory on object storage S3 server
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
     $migrateLogger->info('Updating the target datadirectory for S3 Swift');
     $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
 } else {
@@ -183,7 +138,7 @@ $storageManager->updateId($localStorage->numeric_id, $newIdLocalStorage);
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');
 $NEW_CONFIG_NEXTCLOUD = $CONFIG_NEXTCLOUD; // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), $PROVIDERS_S3_SWIFT)) {
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
     $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
         'class' => 'OC\\Files\\ObjectStore\\Swift',
         'arguments' => [
