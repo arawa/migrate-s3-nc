@@ -33,30 +33,22 @@ $migrateLogger->info('Get all development environments');
 Environment::load();
 
 $fileManager = new FileUserManager();
-
-$fileUsers = $fileManager->getAll();
-
-$s3Manager = new S3Manager();
-$commandsForUsers = $s3Manager->generatorPubObject($fileUsers);
-
-$poolForUsers = $s3Manager->pool($commandsForUsers);
-
-$promiseForUsers = $poolForUsers->promise();
-
 $filesLocalStorageManager = new FileLocalStorageManager();
 
-$filesLocalStorage = $filesLocalStorageManager->getAll();
-$commandsForLocal = $s3Manager->generatorPubObject($filesLocalStorage);
+$s3Manager = new S3Manager();
+$commands = $s3Manager->generatorPubObject(
+    array_merge(
+        $fileManager->getAll(),
+        $filesLocalStorageManager->getAll()
+    )
+);
 
-$poolForLocal = $s3Manager->pool($commandsForLocal);
-
-$migrateLogger->info('Start uploading files to the S3 server for the UserLocal');
-$promiseForLocal = $poolForLocal->promise();
+$pool = $s3Manager->pool($commands);
+$promise = $pool->promise();
 
 // Waitting promises
 $migrateLogger->info('Waitting promises');
-$promiseForUsers->wait();
-$promiseForLocal->wait();
+$promise->wait();
 
 $storageManager = new StorageManager();
 
