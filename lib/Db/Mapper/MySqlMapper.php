@@ -8,6 +8,7 @@ require_once 'lib/Entities/Storage.php';
 require_once 'lib/Entities/FileUsers.php';
 require_once 'lib/Entities/FileLocalStorage.php';
 
+use Entity\Storage;
 use Entity\FileUsers;
 use Db\DatabaseSingleton;
 use Entity\FileLocalStorage;
@@ -21,28 +22,21 @@ class MySqlMapper
         $this->database = DatabaseSingleton::getInstance();
     }
 
-    /**
-     * @return object where the fields are properties.
-     * local value is excluded.
-     * @example $listNumericId[0]->numeric_id
-     */
-    public function getNumericIdStorages() {
+    public function getStoragesOfUsers()
+    {
         try {
-
             $this->database->open();
 
-            $query = $this->database->getPdo()->query('select numeric_id from oc_storages where id not regexp "local::"');
+            $query = $this->database->getPdo()->query('select * from oc_storages where id not regexp "local::"');
     
-            $result = $query->fetchAll($this->database->getPdo()::FETCH_OBJ);
+            $result = $query->fetchAll($this->database->getPdo()::FETCH_CLASS, Storage::class);
             
             $this->database->close();
 
             return $result;
-            
-        } catch(PDOException $e) {
 
+        } catch (PDOException $e) {
             die($e->getMessage());
-
         }
     }
 
@@ -97,6 +91,7 @@ class MySqlMapper
     /**
      * @return Entity\Storage
      * @example $storages[0]->getNumericId()
+     * @todo delete
      */
     public function getStorage($numericId) {
         try {

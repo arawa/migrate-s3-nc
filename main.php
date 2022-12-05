@@ -2,6 +2,7 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Constants\Constants;
 use Environment\Environment;
 use Managers\FileLocalStorageManager;
 use Managers\FileUserManager;
@@ -50,29 +51,21 @@ $promise = $pool->promise();
 $migrateLogger->info('Waitting promises');
 $promise->wait();
 
+// update the oc_storages table database
 $storageManager = new StorageManager();
-
-// Update the oc_storages database table.
-// Excepted local user.
-$migrateLogger->info('Updating the Storage database table foreach users');
-$numericIdStorages = $storageManager->getAllNumericId();
-foreach($numericIdStorages as $numericIdStorage ) {
-    $storage = $storageManager->get($numericIdStorage->numeric_id);
-    $newIdStorage = 'object::user:' . $storage->getUid();
-    $storageManager->updateId($storage->getNumericId(), $newIdStorage);
+foreach($storageManager->getAll() as $storage ) {
+    $storageManager->updateId($storage->getNumericId(), Constants::ID_USER_OBJECT . $storage->getUid());
 }
 
-// Update the target datadirectory on object storage S3 server
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
-    $migrateLogger->info('Updating the target datadirectory for S3 Swift');
-    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
-} else {
-    $migrateLogger->info('Updating the target datadirectory for S3 Compatible');
-    $newIdLocalStorage = 'object::store:amazon::' . $_ENV['S3_BUCKET_NAME'];
-}
-$migrateLogger->info('Updating the Storage database table for LocalUser');
 $localStorage = $storageManager->getLocalStorage();
-$storageManager->updateId($localStorage->numeric_id, $newIdLocalStorage);
+
+if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
+    $idObjectStorage = Constants::ID_S3_COMPATIBLE_OBJECT . strtolower($_ENV['S3_BUCKET_NAME']);
+} else {
+    $idObjectStorage = Constants::ID_S3_AMAZON_OBJECT . $_ENV['S3_BUCKET_NAME'];
+}
+
+$storageManager->updateId($localStorage->numeric_id, $idObjectStorage);
 
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');

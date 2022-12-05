@@ -13,11 +13,14 @@ class StorageManager
         $this->mysqlMapper = new MySqlMapper();
     }
 
-    public function getAllNumericId()
+    public function getAll()
     {
-        return $this->mysqlMapper->getNumericIdStorages();
+        return $this->mysqlMapper->getStoragesOfUsers();
     }
 
+    /**
+     * @todo delete
+     */
     public function get($numericId)
     {
         return $this->mysqlMapper->getStorage($numericId);
