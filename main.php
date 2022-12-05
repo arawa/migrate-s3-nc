@@ -2,15 +2,18 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
+use Constants\Constants;
 use Environment\Environment;
 use Managers\FileLocalStorageManager;
 use Managers\FileUserManager;
-use Managers\StorageManager;
+use Managers\LocalStorageManager;
+use Managers\HomeStorageManager;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use NextcloudConfiguration\NextcloudConfiguration;
 use S3\S3Manager;
+use Service\StorageService;
 
 include "lib/functions.php";
 
@@ -50,29 +53,18 @@ $promise = $pool->promise();
 $migrateLogger->info('Waitting promises');
 $promise->wait();
 
-$storageManager = new StorageManager();
-
-// Update the oc_storages database table.
-// Excepted local user.
-$migrateLogger->info('Updating the Storage database table foreach users');
-$numericIdStorages = $storageManager->getAllNumericId();
-foreach($numericIdStorages as $numericIdStorage ) {
-    $storage = $storageManager->get($numericIdStorage->numeric_id);
-    $newIdStorage = 'object::user:' . $storage->getUid();
-    $storageManager->updateId($storage->getNumericId(), $newIdStorage);
+// update the oc_storages table database
+$HomeStorageManager = new HomeStorageManager();
+foreach($HomeStorageManager->getAll() as $storage ) {
+    $HomeStorageManager->updateId($storage->getNumericId(), Constants::ID_USER_OBJECT . $storage->getUid());
 }
 
-// Update the target datadirectory on object storage S3 server
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
-    $migrateLogger->info('Updating the target datadirectory for S3 Swift');
-    $newIdLocalStorage = 'object::store:' . strtolower($_ENV['S3_BUCKET_NAME']);
-} else {
-    $migrateLogger->info('Updating the target datadirectory for S3 Compatible');
-    $newIdLocalStorage = 'object::store:amazon::' . $_ENV['S3_BUCKET_NAME'];
-}
-$migrateLogger->info('Updating the Storage database table for LocalUser');
-$localStorage = $storageManager->getLocalStorage();
-$storageManager->updateId($localStorage->numeric_id, $newIdLocalStorage);
+$localStorageManager = new LocalStorageManager();
+
+// We manage a monobucket for the momment...
+$idObjectStorage = StorageService::getNewIdLocalStorage();
+$localStorage = $localStorageManager->getAll()[0];
+$localStorageManager->updateId($storage->getNumericId(), $idObjectStorage);
 
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');

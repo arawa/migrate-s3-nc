@@ -11,6 +11,7 @@
     },
     "autoload": {
         "psr-4": {
+            "Constants\\": "lib/",
             "Db\\": "lib/Db",
             "Db\\Mapper\\" : "lib/Db/Mapper",
             "Db\\Mapper\\MysqlMapper\\" : "lib/Db/Mapper",
@@ -19,6 +20,8 @@
             "Entities\\Storage\\": "lib/Entities",
             "Entities\\File\\": "lib/Entities",
             "Environment\\": "lib/",
+            "Interfaces\\": "lib/Interfaces",
+            "Service\\": "lib/Service",
             "S3\\": "lib/S3",
             "NextcloudConfiguration\\": "lib/",
             "Iterator\\": "lib/Iterators",
