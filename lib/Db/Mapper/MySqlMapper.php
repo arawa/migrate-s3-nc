@@ -22,7 +22,10 @@ class MySqlMapper
         $this->database = DatabaseSingleton::getInstance();
     }
 
-    public function getStoragesOfUsers()
+    /**
+     * @return Storage[]
+     */
+    public function getHomeStorages()
     {
         try {
             $this->database->open();
@@ -41,10 +44,30 @@ class MySqlMapper
     }
 
     /**
+     * @return Storage[]
+     */
+    public function getLocalStorages()
+    {
+        try {
+            $this->database->open();
+
+            $query = $this->database->getPdo()->query('select * from oc_storages where id like "%local::%"');
+    
+            $result = $query->fetchAll($this->database->getPdo()::FETCH_CLASS, Storage::class);
+            
+            $this->database->close();
+
+            return $result;
+
+        } catch (PDOException $e) {
+            die($e->getMessage());
+        }
+    }
+
+    /**
      * update the id storage (not numeric_id)
      */
     public function updateIdStorage($numericId, $newId) {
-        // update
         try {
 
             $this->database->open();
@@ -67,6 +90,7 @@ class MySqlMapper
     /**
      * @return object where the fields are properties.
      * @example $localStorage->id
+     * @todo delete
      */
     public function getLocalStorage() {
         try {

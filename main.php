@@ -6,12 +6,14 @@ use Constants\Constants;
 use Environment\Environment;
 use Managers\FileLocalStorageManager;
 use Managers\FileUserManager;
-use Managers\StorageManager;
+use Managers\LocalStorageManager;
+use Managers\HomeStorageManager;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use NextcloudConfiguration\NextcloudConfiguration;
 use S3\S3Manager;
+use Service\StorageService;
 
 include "lib/functions.php";
 
@@ -52,20 +54,17 @@ $migrateLogger->info('Waitting promises');
 $promise->wait();
 
 // update the oc_storages table database
-$storageManager = new StorageManager();
-foreach($storageManager->getAll() as $storage ) {
-    $storageManager->updateId($storage->getNumericId(), Constants::ID_USER_OBJECT . $storage->getUid());
+$HomeStorageManager = new HomeStorageManager();
+foreach($HomeStorageManager->getAll() as $storage ) {
+    $HomeStorageManager->updateId($storage->getNumericId(), Constants::ID_USER_OBJECT . $storage->getUid());
 }
 
-$localStorage = $storageManager->getLocalStorage();
+$localStorageManager = new LocalStorageManager();
 
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
-    $idObjectStorage = Constants::ID_S3_COMPATIBLE_OBJECT . strtolower($_ENV['S3_BUCKET_NAME']);
-} else {
-    $idObjectStorage = Constants::ID_S3_AMAZON_OBJECT . $_ENV['S3_BUCKET_NAME'];
-}
-
-$storageManager->updateId($localStorage->numeric_id, $idObjectStorage);
+// We manage a monobucket for the momment...
+$idObjectStorage = StorageService::getNewIdLocalStorage();
+$localStorage = $localStorageManager->getAll()[0];
+$localStorageManager->updateId($storage->getNumericId(), $idObjectStorage);
 
 // Creating the new config for Nextcloud
 $migrateLogger->info('Preparing the new config file for Nextcloud');

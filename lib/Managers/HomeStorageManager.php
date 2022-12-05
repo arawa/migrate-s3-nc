@@ -3,8 +3,10 @@
 namespace Managers;
 
 use Db\Mapper\MySqlMapper;
+use Entity\Storage;
+use Interfaces\StorageManagerInterface;
 
-class StorageManager
+class HomeStorageManager implements StorageManagerInterface
 {
     private MysqlMapper $mysqlMapper;
 
@@ -13,9 +15,12 @@ class StorageManager
         $this->mysqlMapper = new MySqlMapper();
     }
 
+    /**
+     * @return Storage[]
+     */
     public function getAll()
     {
-        return $this->mysqlMapper->getStoragesOfUsers();
+        return $this->mysqlMapper->getHomeStorages();
     }
 
     /**
@@ -26,11 +31,14 @@ class StorageManager
         return $this->mysqlMapper->getStorage($numericId);
     }
 
-    public function updateId($currentId, $newId)
+    public function updateId($currentId, $newId): void
     {
-        return $this->mysqlMapper->updateIdStorage($currentId, $newId);
+        $this->mysqlMapper->updateIdStorage($currentId, $newId);
     }
 
+    /**
+     * @todo delete
+     */
     public function getLocalStorage()
     {
         return $this->mysqlMapper->getLocalStorage();
