@@ -11,7 +11,12 @@ function formatDate() {
         $formatDate .= '-' . strval($date['mon']);
     }
     
-    $formatDate .= '-' . strval($date['mday']);
+    if ($date['mday'] < 10) {
+        $formatDate .= '-' . '0' . strval($date['mday']);
+    } else {
+        $formatDate .= '-' . strval($date['mday']);
+    }
+    
     $formatDate .= '.' . strval($date['hours']);
     $formatDate .= ':' . strval($date['minutes']);
 
