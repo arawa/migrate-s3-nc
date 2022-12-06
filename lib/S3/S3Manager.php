@@ -2,10 +2,11 @@
 
 namespace S3;
 
-use Aws\CommandInterface;
-use Aws\CommandPool;
-use Aws\S3\S3Client;
 use Generator;
+use Aws\CommandPool;
+use Aws\Exception\AwsException;
+use Aws\S3\S3Client;
+use Logger\LoggerSingleton;
 
 class S3Manager
 {
@@ -29,6 +30,11 @@ class S3Manager
 
     public function generatorPubObject(array $files): Generator
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Generator commands PutObject for each file.');
+
         foreach ($files as $file) {
             yield $this->s3->getCommand('PutObject', [
                 'Bucket' => $_ENV['S3_BUCKET_NAME'],
@@ -40,8 +46,22 @@ class S3Manager
 
     public function pool(Generator $commands): CommandPool
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Starting the migration to S3.');
+
         return new CommandPool($this->s3, $commands, [
             'concurrency' => self::CONCURRENCY,
+            'rejected' => function (AwsException $reason, $iterKey) {
+                LoggerSingleton
+                ::getInstance()
+                ->getLogger()
+                ->error('The programm stopped during the migration.', [
+                    'reason' => $reason,
+                    'iter_key' => $iterKey
+                ]);
+            }
         ]);
     }
 }

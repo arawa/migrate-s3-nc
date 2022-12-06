@@ -3,6 +3,7 @@
 namespace Managers;
 
 use Db\Mapper\MySqlMapper;
+use Logger\LoggerSingleton;
 use Iterator\FilesLocalStorageIterator;
 use NextcloudConfiguration\NextcloudConfiguration;
 
@@ -20,6 +21,11 @@ class FileLocalStorageManager
      */
     public function getAll()
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Get all files of the local storage.');
+
         $directoryUnix = $this->mysqlMapper->getUnixDirectoryMimeType();
         $localStorage = $this->mysqlMapper->getLocalStorage();
 

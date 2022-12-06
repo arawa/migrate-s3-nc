@@ -2,6 +2,7 @@
 
 namespace NextcloudS3Configuration;
 
+use Logger\LoggerSingleton;
 use Environment\Environment;
 use NextcloudConfiguration\NextcloudConfiguration;
 
@@ -9,11 +10,26 @@ class NextcloudS3Configuration
 {
     public static function getS3Configuration(): array
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Get the new configuration s3.');
+
         $config = NextcloudConfiguration::getInstance()->getConfig();
         
         if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->info('The configuration s3 is based on the Swift.');
+
             $config = array_merge($config, self::getS3SwitfConfig());
         } else {
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->info('The configuration s3 is based on the S3 Compatible.');
+
             $config = array_merge($config, self::getS3CompatibleConfig());
         }
 
