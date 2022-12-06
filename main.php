@@ -2,18 +2,19 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use Constants\Constants;
-use Environment\Environment;
-use Managers\FileLocalStorageManager;
-use Managers\FileUserManager;
-use Managers\LocalStorageManager;
-use Managers\HomeStorageManager;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
-use NextcloudConfiguration\NextcloudConfiguration;
 use S3\S3Manager;
+use Monolog\Logger;
+use Constants\Constants;
 use Service\StorageService;
+use Environment\Environment;
+use Managers\FileUserManager;
+use Managers\HomeStorageManager;
+use Managers\LocalStorageManager;
+use Monolog\Handler\StreamHandler;
+use Monolog\Formatter\LineFormatter;
+use Managers\FileLocalStorageManager;
+use NextcloudS3Configuration\NextcloudS3Configuration;
+use FileNextcloudConfiguration\FileNextcloudConfiguration;
 
 include "lib/functions.php";
 
@@ -48,9 +49,6 @@ $commands = $s3Manager->generatorPubObject(
 
 $pool = $s3Manager->pool($commands);
 $promise = $pool->promise();
-
-// Waitting promises
-$migrateLogger->info('Waitting promises');
 $promise->wait();
 
 // update the oc_storages table database
@@ -60,62 +58,16 @@ foreach($HomeStorageManager->getAll() as $storage ) {
 }
 
 $localStorageManager = new LocalStorageManager();
-
 // We manage a monobucket for the momment...
 $idObjectStorage = StorageService::getNewIdLocalStorage();
 $localStorage = $localStorageManager->getAll()[0];
 $localStorageManager->updateId($storage->getNumericId(), $idObjectStorage);
 
-// Creating the new config for Nextcloud
-$migrateLogger->info('Preparing the new config file for Nextcloud');
-$NEW_CONFIG_NEXTCLOUD = NextcloudConfiguration::getInstance()->getConfig(); // Don't clone. $NEW_CONFIG_NEXTCLOUD has a new address memory.
-if (in_array(strtolower($_ENV['S3_PROVIDER_NAME']), Environment::getProvidersS3Swift())) {
-    $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
-        'class' => 'OC\\Files\\ObjectStore\\Swift',
-        'arguments' => [
-            'autocreate'    => true,
-            'user' => [
-                'name' => $_ENV['S3_SWIFT_USERNAME'],
-                'password' => $_ENV['S3_SWIFT_PASSWORD'],
-                'domain' => [
-                    'name'  => 'default'
-                ],
-            ],
-            'scope' => [
-                'project' => [
-                    'name' => $_ENV['S3_SWIFT_ID_PROJECT'],
-                    'domain' => [
-                        'name' => 'default',
-                    ],
-                ],
-            ],
-            'serviceName' => 'swift',
-            'region'    => strtoupper($_ENV['S3_REGION']),
-            'url'   =>  $_ENV['S3_SWIFT_URL'],
-            'bucket' => $_ENV['S3_BUCKET_NAME'],
-        ]
-    ];
-} else {
-    $NEW_CONFIG_NEXTCLOUD['objectstore'] = [
-        'class' => '\\OC\\Files\\ObjectStore\\S3',
-        'arguments' => [
-            'bucket' => $_ENV['S3_BUCKET_NAME'],
-            'autocreate'    => true,
-            'key'   => $_ENV['S3_KEY'],
-            'secret'    => $_ENV['S3_SECRET'],
-            'hostname'  => $_ENV['S3_HOSTNAME'],
-            'port'  => intval($_ENV['S3_PORT']),
-            'use_ssl'   => true,
-            'region'    => strtolower($_ENV['S3_REGION']),
-            'use_path_style' => true
-	    ]
-    ];
-}
-
-// Creating a new_config.php file and move it by the Nextcloud's config.php file user side.
-file_put_contents(__DIR__ . '/new_config.php', "<?php\n" . '$CONFIG = ' . var_export($NEW_CONFIG_NEXTCLOUD, true) . ';');
+$data = NextcloudS3Configuration::getS3Configuration();
+$file = new FileNextcloudConfiguration("new_config.php");
+$file->write($data);
+$file->close();
 
 print("\nCongrulation ! The migration is done ! 🎉 🪣\n");
 print("You should move the new_config.php file and replace Nextcloud's config.php file with it.\n");
 print("Please, check if it's new config is correct !\n\n");
-$migrateLogger->info('It\'s over');
