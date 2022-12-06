@@ -11,6 +11,7 @@ require_once 'lib/Entities/FileLocalStorage.php';
 use Entity\Storage;
 use Entity\FileUsers;
 use Db\DatabaseSingleton;
+use Logger\LoggerSingleton;
 use Entity\FileLocalStorage;
 
 class MySqlMapper
@@ -39,6 +40,11 @@ class MySqlMapper
             return $result;
 
         } catch (PDOException $e) {
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
         }
     }
@@ -60,6 +66,11 @@ class MySqlMapper
             return $result;
 
         } catch (PDOException $e) {
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
         }
     }
@@ -81,6 +92,11 @@ class MySqlMapper
             $this->database->close();
 
         } catch(PDOException $e) {
+
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
 
             die($e->getMessage());
             
@@ -107,6 +123,11 @@ class MySqlMapper
             
         } catch(PDOException $e) {
 
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
 
         }
@@ -131,6 +152,11 @@ class MySqlMapper
             return $result;
             
         } catch(PDOException $e) {
+
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
 
             die($e->getMessage());
 
@@ -175,6 +201,11 @@ class MySqlMapper
             return $result;
             
         } catch(PDOException $e) {
+
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
 
             die($e->getMessage());
 
@@ -221,6 +252,11 @@ class MySqlMapper
             
         } catch(PDOException $e) {
 
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
 
         }
@@ -259,6 +295,11 @@ class MySqlMapper
             return $result;
             
         } catch(PDOException $e) {
+
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
 
             die($e->getMessage());
 
@@ -299,6 +340,11 @@ class MySqlMapper
 
         } catch (PDOException $e) {
 
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
             
         }
@@ -336,6 +382,11 @@ class MySqlMapper
 			
         } catch (PDOException $e) {
 
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
+
             die($e->getMessage());
 
         }
@@ -359,6 +410,11 @@ class MySqlMapper
             return $result;
             
         } catch(PDOException $e) {
+
+            LoggerSingleton
+            ::getInstance()
+            ->getLogger()
+            ->error($e->getMessage());
 
             die($e->getMessage());
 

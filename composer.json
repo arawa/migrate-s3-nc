@@ -12,6 +12,7 @@
     "autoload": {
         "psr-4": {
             "Constants\\": "lib/",
+            "Logger\\": "lib/Logger",
             "Db\\": "lib/Db",
             "Db\\Mapper\\" : "lib/Db/Mapper",
             "Db\\Mapper\\MysqlMapper\\" : "lib/Db/Mapper",

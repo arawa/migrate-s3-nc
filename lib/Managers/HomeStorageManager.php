@@ -2,8 +2,9 @@
 
 namespace Managers;
 
-use Db\Mapper\MySqlMapper;
 use Entity\Storage;
+use Db\Mapper\MySqlMapper;
+use Logger\LoggerSingleton;
 use Interfaces\StorageManagerInterface;
 
 class HomeStorageManager implements StorageManagerInterface
@@ -20,6 +21,11 @@ class HomeStorageManager implements StorageManagerInterface
      */
     public function getAll()
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Get all Home storages.');
+
         return $this->mysqlMapper->getHomeStorages();
     }
 
@@ -33,6 +39,14 @@ class HomeStorageManager implements StorageManagerInterface
 
     public function updateId($currentId, $newId): void
     {
+        LoggerSingleton
+        ::getInstance()
+        ->getLogger()
+        ->info('Update the id storage.', [
+            'current_id' => $currentId,
+            'new_id' => $newId
+        ]);
+
         $this->mysqlMapper->updateIdStorage($currentId, $newId);
     }
 
