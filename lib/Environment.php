@@ -1,9 +1,9 @@
 <?php
 
-namespace Environment;
+namespace MigrationS3NC;
 
 use Dotenv\Dotenv;
-use Logger\LoggerSingleton;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class Environment
 {

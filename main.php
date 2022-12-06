@@ -2,16 +2,16 @@
 
 require __DIR__ . '/vendor/autoload.php';
 
-use S3\S3Manager;
-use Constants\Constants;
-use Service\StorageService;
-use Environment\Environment;
-use Managers\FileUserManager;
-use Managers\HomeStorageManager;
-use Managers\LocalStorageManager;
-use Managers\FileLocalStorageManager;
-use NextcloudS3Configuration\NextcloudS3Configuration;
-use FileNextcloudConfiguration\FileNextcloudConfiguration;
+use MigrationS3NC\Constants;
+use MigrationS3NC\Environment;
+use MigrationS3NC\FileNextcloudConfiguration;
+use MigrationS3NC\Managers\FileLocalStorageManager;
+use MigrationS3NC\Managers\FileUserManager;
+use MigrationS3NC\Managers\HomeStorageManager;
+use MigrationS3NC\Managers\LocalStorageManager;
+use MigrationS3NC\NextcloudS3Configuration;
+use MigrationS3NC\S3\S3Manager;
+use MigrationS3NC\Service\StorageService;
 
 Environment::load();
 

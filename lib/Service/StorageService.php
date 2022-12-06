@@ -1,10 +1,10 @@
 <?php
 
-namespace Service;
+namespace MigrationS3NC\Service;
 
-use Constants\Constants;
-use Logger\LoggerSingleton;
-use Environment\Environment;
+use MigrationS3NC\Constants;
+use MigrationS3NC\Environment;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class StorageService
 {

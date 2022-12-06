@@ -1,6 +1,6 @@
 <?php
 
-namespace Entity;
+namespace MigrationS3NC\Entity;
 
 class FileUsers
 {

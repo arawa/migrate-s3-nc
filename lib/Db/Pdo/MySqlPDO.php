@@ -1,6 +1,6 @@
 <?php
 
-namespace Db\Pdo;
+namespace MigrationS3NC\Db\Pdo;
 
 use PDO;
 

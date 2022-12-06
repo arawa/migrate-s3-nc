@@ -1,11 +1,11 @@
 <?php
 
-namespace Managers;
+namespace MigrationS3NC\Managers;
 
-use Db\Mapper\MySqlMapper;
-use Logger\LoggerSingleton;
-use Iterator\FilesLocalStorageIterator;
-use NextcloudConfiguration\NextcloudConfiguration;
+use MigrationS3NC\Db\Mapper\MySqlMapper;
+use MigrationS3NC\Iterator\FilesLocalStorageIterator;
+use MigrationS3NC\Logger\LoggerSingleton;
+use MigrationS3NC\NextcloudConfiguration;
 
 class FileLocalStorageManager
 {

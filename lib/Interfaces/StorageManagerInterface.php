@@ -1,6 +1,6 @@
 <?php
 
-namespace Interfaces;
+namespace MigrationS3NC\Interfaces;
 
 use Entity\Storage;
 

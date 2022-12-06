@@ -1,6 +1,6 @@
 <?php
 
-namespace Db\Mapper;
+namespace MigrationS3NC\Db\Mapper;
 
 use PDOException;
 
@@ -8,11 +8,11 @@ require_once 'lib/Entities/Storage.php';
 require_once 'lib/Entities/FileUsers.php';
 require_once 'lib/Entities/FileLocalStorage.php';
 
-use Entity\Storage;
-use Entity\FileUsers;
-use Db\DatabaseSingleton;
-use Logger\LoggerSingleton;
-use Entity\FileLocalStorage;
+use MigrationS3NC\Db\DatabaseSingleton;
+use MigrationS3NC\Entity\FileLocalStorage;
+use MigrationS3NC\Entity\FileUsers;
+use MigrationS3NC\Entity\Storage;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class MySqlMapper
 {

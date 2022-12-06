@@ -1,9 +1,9 @@
 <?php
 
-namespace Db;
+namespace MigrationS3NC\Db;
 
+use MigrationS3NC\Db\Pdo\MySqlPDO;
 use PDO;
-use Db\Pdo\MySqlPDO;
 
 class DatabaseSingleton
 {
