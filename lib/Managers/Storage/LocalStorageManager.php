@@ -1,6 +1,6 @@
 <?php
 
-namespace MigrationS3NC\Managers;
+namespace MigrationS3NC\Managers\Storage;
 
 use MigrationS3NC\Db\Mapper\MySqlMapper;
 use MigrationS3NC\Interfaces\StorageManagerInterface;

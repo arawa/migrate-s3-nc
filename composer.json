@@ -12,14 +12,18 @@
     "autoload": {
         "psr-4": {
             "MigrationS3NC\\": "lib/",
+            "MigrationS3NC\\Configuration\\": "lib/Configuration",
             "MigrationS3NC\\Db\\": "lib/Db",
             "MigrationS3NC\\Db\\Mapper\\" : "lib/Db/Mapper",
             "MigrationS3NC\\Db\\Pdo\\" : "lib/Db/Pdo",
+            "MigrationS3NC\\File\\" : "lib/File",
             "MigrationS3NC\\Interfaces\\": "lib/Interfaces",
             "MigrationS3NC\\Iterator\\": "lib/Iterators",
             "MigrationS3NC\\Logger\\": "lib/Logger",
             "MigrationS3NC\\Managers\\": "lib/Managers",
-            "MigrationS3NC\\S3\\": "lib/S3",
+            "MigrationS3NC\\Managers\\File\\": "lib/Managers/File",
+            "MigrationS3NC\\Managers\\S3\\": "lib/Managers/S3",
+            "MigrationS3NC\\Managers\\Storage\\": "lib/Managers/Storage",
             "MigrationS3NC\\Service\\": "lib/Service"
         }
     }

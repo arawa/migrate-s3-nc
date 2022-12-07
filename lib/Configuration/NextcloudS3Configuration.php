@@ -1,10 +1,10 @@
 <?php
 
-namespace MigrationS3NC;
+namespace MigrationS3NC\Configuration;
 
+use MigrationS3NC\Configuration\NextcloudConfiguration;
 use MigrationS3NC\Environment;
 use MigrationS3NC\Logger\LoggerSingleton;
-use MigrationS3NC\NextcloudConfiguration;
 
 class NextcloudS3Configuration
 {

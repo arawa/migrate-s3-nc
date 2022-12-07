@@ -1,6 +1,6 @@
 <?php
 
-namespace MigrationS3NC;
+namespace MigrationS3NC\Configuration;
 
 use MigrationS3NC\Logger\LoggerSingleton;
 
