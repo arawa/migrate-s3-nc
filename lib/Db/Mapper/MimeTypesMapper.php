@@ -3,6 +3,7 @@
 namespace MigrationS3NC\Db\Mapper;
 
 use MigrationS3NC\Db\DatabaseSingleton;
+use MigrationS3NC\Exceptions\SqlException;
 use MigrationS3NC\Logger\LoggerSingleton;
 use PDOException;
 
@@ -39,7 +40,7 @@ class MimeTypesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
 
         }
     }

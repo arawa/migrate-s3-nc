@@ -10,6 +10,7 @@ use MigrationS3NC\Entity\FileUsers;
 use MigrationS3NC\Db\DatabaseSingleton;
 use MigrationS3NC\Logger\LoggerSingleton;
 use MigrationS3NC\Entity\FileLocalStorage;
+use MigrationS3NC\Exceptions\SqlException;
 
 class FilesMapper
 {
@@ -65,7 +66,7 @@ class FilesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
 
         }
     }
@@ -115,8 +116,7 @@ class FilesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
-
+            throw new SqlException($e->getMessage());
         }
     }
 }
