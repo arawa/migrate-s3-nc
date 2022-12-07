@@ -7,6 +7,7 @@ require_once 'lib/Entities/Storage.php';
 use PDOException;
 use MigrationS3NC\Entity\Storage;
 use MigrationS3NC\Db\DatabaseSingleton;
+use MigrationS3NC\Exceptions\SqlException;
 use MigrationS3NC\Logger\LoggerSingleton;
 
 class StoragesMapper
@@ -41,7 +42,7 @@ class StoragesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
         }
     }
 
@@ -67,7 +68,7 @@ class StoragesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
         }
     }
 
@@ -94,7 +95,7 @@ class StoragesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
             
         }
     }
@@ -123,7 +124,7 @@ class StoragesMapper
             ->getLogger()
             ->error($e->getMessage());
 
-            die($e->getMessage());
+            throw new SqlException($e->getMessage());
 
         }
     }
