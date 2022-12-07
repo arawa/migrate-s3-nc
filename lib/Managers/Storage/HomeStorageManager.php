@@ -10,7 +10,7 @@ use MigrationS3NC\Logger\LoggerSingleton;
 class HomeStorageManager implements StorageManagerInterface
 {
     private StoragesMapper $storagesMapper;
-    
+
     public function __construct()
     {
         $this->storagesMapper = new StoragesMapper();
@@ -21,8 +21,7 @@ class HomeStorageManager implements StorageManagerInterface
      */
     public function getAll()
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Get all Home storages.');
 
@@ -31,8 +30,7 @@ class HomeStorageManager implements StorageManagerInterface
 
     public function updateId($currentId, $newId): void
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Update the id storage.', [
             'current_id' => $currentId,
@@ -46,6 +44,4 @@ class HomeStorageManager implements StorageManagerInterface
     {
         return $this->storagesMapper->getLocalStorage();
     }
-
-
 }

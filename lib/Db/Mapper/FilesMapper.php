@@ -14,7 +14,6 @@ use MigrationS3NC\Exceptions\SqlException;
 
 class FilesMapper
 {
-
     private DatabaseSingleton $database;
 
     public function __construct()
@@ -27,18 +26,18 @@ class FilesMapper
      * @param string $IdStorage;
      * @return File[]
      */
-    public function getFilesUsers(string $IdMimetype = null, string $IdStorage = null) {
+    public function getFilesUsers(string $IdMimetype = null, string $IdStorage = null)
+    {
         try {
-
             $this->database->open();
-            
+
             $args = "where oc_filecache.storage=oc_storages.numeric_id ";
 
-            if(! is_null($IdMimetype)) {
+            if (! is_null($IdMimetype)) {
                 $args .= " and not oc_filecache.mimetype=" . $IdMimetype;
             }
-            
-            if(! is_null($IdStorage)) {
+
+            if (! is_null($IdStorage)) {
                 $args .= " and not oc_filecache.storage=" . $IdStorage;
             }
 
@@ -51,23 +50,19 @@ class FilesMapper
                 from oc_filecache, oc_storages ' . $args;
 
             $query = $this->database->getPdo()->query($request);
-    
-            
+
+
             $result = $query->fetchAll($this->database->getPdo()::FETCH_CLASS, FileUsers::class);
 
             $this->database->close();
 
             return $result;
-            
         } catch(PDOException $e) {
-
-            LoggerSingleton
-            ::getInstance()
+            LoggerSingleton::getInstance()
             ->getLogger()
             ->error($e->getMessage());
 
             throw new SqlException($e->getMessage());
-
         }
     }
 
@@ -77,18 +72,18 @@ class FilesMapper
      * @param string $IdStorage;
      * @return
      */
-    public function getFilesLocalStorage(string $IdMimetype = null, string $IdStorage = null) {
+    public function getFilesLocalStorage(string $IdMimetype = null, string $IdStorage = null)
+    {
         try {
-
             $this->database->open();
-            
+
             $args = "where oc_filecache.storage=oc_storages.numeric_id ";
 
-            if(! is_null($IdMimetype)) {
+            if (! is_null($IdMimetype)) {
                 $args .= " and not oc_filecache.mimetype=" . $IdMimetype;
             }
-            
-            if(! is_null($IdStorage)) {
+
+            if (! is_null($IdStorage)) {
                 $args .= " and oc_filecache.storage=" . $IdStorage;
             }
 
@@ -108,11 +103,8 @@ class FilesMapper
             $this->database->close();
 
             return $result;
-            
         } catch(PDOException $e) {
-
-            LoggerSingleton
-            ::getInstance()
+            LoggerSingleton::getInstance()
             ->getLogger()
             ->error($e->getMessage());
 

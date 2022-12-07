@@ -6,28 +6,25 @@ use MigrationS3NC\Logger\LoggerSingleton;
 
 class FileNextcloudConfiguration
 {
-
     /**
      * @var ressource|null
      */
     private $handle;
-    
+
     public function __construct(string $filename)
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Create a template s3 configuration file for nextcloud.');
-        $this->handle = fopen( __DIR__ . '/../' . $filename, "w+");
+        $this->handle = fopen(__DIR__ . '/../' . $filename, "w+");
     }
-    
+
     /**
      * @return int|bool
      */
     public function write(array $data)
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Add data in the template s3 configuration file.');
 
@@ -36,8 +33,7 @@ class FileNextcloudConfiguration
 
     public function close(): bool
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('The template s3 configuration file is closed.');
 

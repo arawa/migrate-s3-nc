@@ -22,9 +22,9 @@ class DatabaseSingleton
         $this->pdo = new MySqlPDO();
     }
 
-    public static function getInstance(): DatabaseSingleton {
-        if (is_null(self::$instance))
-        {
+    public static function getInstance(): DatabaseSingleton
+    {
+        if (is_null(self::$instance)) {
             self::$instance = new DatabaseSingleton();
         }
 
@@ -38,8 +38,7 @@ class DatabaseSingleton
 
     public function open(): void
     {
-        if (is_null($this->pdo))
-        {
+        if (is_null($this->pdo)) {
             $this->pdo = new MySqlPDO();
         }
     }

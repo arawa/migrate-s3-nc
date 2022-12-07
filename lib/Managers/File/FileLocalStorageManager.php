@@ -27,8 +27,7 @@ class FileLocalStorageManager
      */
     public function getAll()
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Get all files of the local storage.');
 

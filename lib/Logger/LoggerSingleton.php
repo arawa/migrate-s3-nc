@@ -11,7 +11,7 @@ include __DIR__ . "/../functions.php";
 
 class LoggerSingleton
 {
-    private const PATH_LOGGER_FOLDER = __DIR__ . '/../../'; 
+    private const PATH_LOGGER_FOLDER = __DIR__ . '/../../';
 
     /**
      * @var LoggerSingleton|null
@@ -26,7 +26,7 @@ class LoggerSingleton
         $output = "[%level_name%] %datetime% %message% %context%\n";
         $formatter = new LineFormatter($output, $dateFormat);
 
-        if ( !is_dir(self::PATH_LOGGER_FOLDER .'logs')) {
+        if (!is_dir(self::PATH_LOGGER_FOLDER .'logs')) {
             mkdir(self::PATH_LOGGER_FOLDER .'logs');
         }
 
