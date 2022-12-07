@@ -1,6 +1,6 @@
 <?php
 
-namespace MigrationS3NC\S3;
+namespace MigrationS3NC\Managers\S3;
 
 use Aws\CommandPool;
 use Aws\Exception\AwsException;

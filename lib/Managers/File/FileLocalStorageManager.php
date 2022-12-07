@@ -1,15 +1,15 @@
 <?php
 
-namespace MigrationS3NC\Managers;
+namespace MigrationS3NC\Managers\File;
 
+use MigrationS3NC\Configuration\NextcloudConfiguration;
 use MigrationS3NC\Db\Mapper\MySqlMapper;
-use MigrationS3NC\Iterator\FilesUserIterator;
+use MigrationS3NC\Iterator\FilesLocalStorageIterator;
 use MigrationS3NC\Logger\LoggerSingleton;
-use MigrationS3NC\NextcloudConfiguration;
 
-class FileUserManager
+class FileLocalStorageManager
 {
-    private MysqlMapper $mysqlMapper;
+    private MySqlMapper $mysqlMapper;
 
     public function __construct()
     {
@@ -17,27 +17,27 @@ class FileUserManager
     }
 
     /**
-     * @return FilesUserIterator[]
+     * @return FilesLocalStorageIterator[]
      */
     public function getAll()
     {
         LoggerSingleton
         ::getInstance()
         ->getLogger()
-        ->info('Get all files of the users without taking into account the local storage.');
+        ->info('Get all files of the local storage.');
 
         $directoryUnix = $this->mysqlMapper->getUnixDirectoryMimeType();
         $localStorage = $this->mysqlMapper->getLocalStorage();
-        
+
         $dataDirectory = NextcloudConfiguration::getInstance()->getDataDirectory();
 
-        $files = $this->mysqlMapper->getFilesUsers($directoryUnix->id, $localStorage->numeric_id);
+        $files = $this->mysqlMapper->getFilesLocalStorage($directoryUnix->id, $localStorage->numeric_id);
         $newFiles = [];
         foreach ($files as $file) {
-            $newFiles[] = new FilesUserIterator([
+            $newFiles[] = new FilesLocalStorageIterator([
                 'relative_path' => $file->getRelativePath(),
-                'absolute_path' => $dataDirectory . '/' . $file->getOwner() . '/' . $file->getRelativePath(),
-                'dirname' => dirname($dataDirectory . '/' . $file->getOwner() . '/' . $file->getRelativePath()),
+                'absolute_path' => $dataDirectory . '/' . $file->getRelativePath(),
+                'dirname' => dirname($dataDirectory . '/' . $file->getRelativePath()),
                 'owner' => $file->getOwner(),
                 'file_id' => $file->getFileId(),
                 'storage_id' => $file->getStorageId(),
