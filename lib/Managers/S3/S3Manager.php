@@ -11,9 +11,9 @@ use MigrationS3NC\Logger\LoggerSingleton;
 class S3Manager
 {
     private S3Client $s3;
-    
+
     private const CONCURRENCY = 10;
-    
+
     public function __construct()
     {
         $this->s3 = new S3Client([
@@ -30,8 +30,7 @@ class S3Manager
 
     public function generatorPubObject(array $files): Generator
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Generator commands PutObject for each file.');
 
@@ -46,16 +45,14 @@ class S3Manager
 
     public function pool(Generator $commands): CommandPool
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Starting the migration to S3.');
 
         return new CommandPool($this->s3, $commands, [
             'concurrency' => self::CONCURRENCY,
             'rejected' => function (AwsException $reason, $iterKey) {
-                LoggerSingleton
-                ::getInstance()
+                LoggerSingleton::getInstance()
                 ->getLogger()
                 ->error('The programm stopped during the migration.', [
                     'reason' => $reason,

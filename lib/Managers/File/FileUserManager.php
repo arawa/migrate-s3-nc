@@ -27,14 +27,13 @@ class FileUserManager
      */
     public function getAll()
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Get all files of the users without taking into account the local storage.');
 
         $directoryUnix = $this->mimeTypesMapper->getUnixDirectoryMimeType();
         $localStorage = $this->storagesMapper->getLocalStorage();
-        
+
         $dataDirectory = NextcloudConfiguration::getInstance()->getDataDirectory();
 
         $files = $this->filesMapper->getFilesUsers($directoryUnix->id, $localStorage->numeric_id);

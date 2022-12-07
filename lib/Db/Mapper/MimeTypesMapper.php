@@ -20,28 +20,24 @@ class MimeTypesMapper
      * @return object where the fields are properties.
      * @example $unixDirectory->id
      */
-    public function getUnixDirectoryMimeType() {
+    public function getUnixDirectoryMimeType()
+    {
         try {
-
             $this->database->open();
 
             $query = $this->database->getPdo()->query('select * from oc_mimetypes where mimetype="httpd/unix-directory"');
-    
+
             $result = $query->fetch();
-            
+
             $this->database->close();
 
             return $result;
-            
         } catch(PDOException $e) {
-
-            LoggerSingleton
-            ::getInstance()
+            LoggerSingleton::getInstance()
             ->getLogger()
             ->error($e->getMessage());
 
             throw new SqlException($e->getMessage());
-
         }
     }
 }

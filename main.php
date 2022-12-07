@@ -32,7 +32,7 @@ $promise->wait();
 
 // update the oc_storages table database
 $HomeStorageManager = new HomeStorageManager();
-foreach($HomeStorageManager->getAll() as $storage ) {
+foreach ($HomeStorageManager->getAll() as $storage) {
     $HomeStorageManager
         ->updateId(
             $storage->getNumericId(),

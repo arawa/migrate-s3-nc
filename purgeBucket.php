@@ -11,7 +11,8 @@ use Dotenv\Dotenv;
  * @param array $objects
  * @return int
  */
-function checkBucketIsEmpty($objects) {
+function checkBucketIsEmpty($objects)
+{
     return count($objects);
 }
 
@@ -19,7 +20,8 @@ function checkBucketIsEmpty($objects) {
  * @param Aws\S3\S3Client $clientS3 initialized before
  * @return \AWS\Result
  */
-function getObjects($clientS3) {
+function getObjects($clientS3)
+{
     return $clientS3->listObjects(
         [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
@@ -49,10 +51,8 @@ $s3 = new S3Client([
 
 $objects = getObjects($s3);
 
-$generatorDeleteObject = function ($objects) use ($s3)
-{
-    foreach($objects['Contents'] as $object)
-    {
+$generatorDeleteObject = function ($objects) use ($s3) {
+    foreach ($objects['Contents'] as $object) {
         yield $s3->getCommand('deleteObject', [
             'Bucket' => $_ENV['S3_BUCKET_NAME'],
             'Key'   => $object['Key']
@@ -61,12 +61,11 @@ $generatorDeleteObject = function ($objects) use ($s3)
 };
 
 while (CheckBucketIsEmpty($objects['Contents'])) {
-
     $generator = $generatorDeleteObject($objects);
     $pool = new CommandPool($s3, $generator);
     $pool->promise();
 
-    $objects = getObjects($s3);    
+    $objects = getObjects($s3);
     if (empty($objects['Contents'])) {
         print("\nNothing objects in your bucket ! 🪣\n");
         break;

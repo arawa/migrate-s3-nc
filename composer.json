@@ -1,7 +1,9 @@
 {
     "version": "0.9",
     "scripts": {
-        "autoload": "composer dump-autoload"
+        "autoload": "composer dump-autoload",
+        "cs:check": "php-cs-fixer fix --dry-run --diff",
+        "cs:fix": "php-cs-fixer fix"
     },
     "require": {
         "vlucas/phpdotenv": "^5.3",
@@ -16,6 +18,7 @@
             "MigrationS3NC\\Db\\": "lib/Db",
             "MigrationS3NC\\Db\\Mapper\\" : "lib/Db/Mapper",
             "MigrationS3NC\\Db\\Pdo\\" : "lib/Db/Pdo",
+            "MigrationS3NC\\Exceptions\\": "lib/Exceptions",
             "MigrationS3NC\\File\\" : "lib/File",
             "MigrationS3NC\\Interfaces\\": "lib/Interfaces",
             "MigrationS3NC\\Iterator\\": "lib/Iterators",
@@ -26,5 +29,8 @@
             "MigrationS3NC\\Managers\\Storage\\": "lib/Managers/Storage",
             "MigrationS3NC\\Service\\": "lib/Service"
         }
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.13"
     }
 }

@@ -20,7 +20,7 @@ class Environment
     {
         return self::PROVIDERS_S3_SWIFT;
     }
-    
+
     /**
      * Load the environment variables.
      */
@@ -29,8 +29,7 @@ class Environment
         $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
         $dotenv->load();
 
-        LoggerSingleton
-            ::getInstance()
+        LoggerSingleton::getInstance()
             ->getLogger()
             ->info('Starting loading environment variables.');
 
@@ -41,16 +40,14 @@ class Environment
         if (in_array(
             strtolower($_ENV['S3_PROVIDER_NAME']),
             self::PROVIDERS_S3_SWIFT
-        ))
-        {
+        )) {
             self::loadS3SwiftEnv($dotenv);
         }
     }
 
     private function loadMysqlEnv(Dotenv $dotenv): void
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Loading the environment variables for the Mysql database.');
 
@@ -62,8 +59,7 @@ class Environment
 
     private function loadS3CommonEnv(Dotenv $dotenv): void
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Loading the environment variables for the S3 common.');
 
@@ -78,8 +74,7 @@ class Environment
 
     private function loadS3SwiftEnv(Dotenv $dotenv): void
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Loading the environment variables for the S3 Swift.');
 
@@ -91,8 +86,7 @@ class Environment
 
     private function loadNextcloudEnv(Dotenv $dotenv): void
     {
-        LoggerSingleton
-        ::getInstance()
+        LoggerSingleton::getInstance()
         ->getLogger()
         ->info('Loading the environment variables for the Nextcloud.');
 
