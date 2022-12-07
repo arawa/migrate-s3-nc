@@ -2,18 +2,18 @@
 
 namespace MigrationS3NC\Managers\Storage;
 
-use MigrationS3NC\Db\Mapper\MySqlMapper;
+use MigrationS3NC\Db\Mapper\StoragesMapper;
 use MigrationS3NC\Entity\Storage;
 use MigrationS3NC\Interfaces\StorageManagerInterface;
 use MigrationS3NC\Logger\LoggerSingleton;
 
 class HomeStorageManager implements StorageManagerInterface
 {
-    private MysqlMapper $mysqlMapper;
-
+    private StoragesMapper $storagesMapper;
+    
     public function __construct()
     {
-        $this->mysqlMapper = new MySqlMapper();
+        $this->storagesMapper = new StoragesMapper();
     }
 
     /**
@@ -26,15 +26,7 @@ class HomeStorageManager implements StorageManagerInterface
         ->getLogger()
         ->info('Get all Home storages.');
 
-        return $this->mysqlMapper->getHomeStorages();
-    }
-
-    /**
-     * @todo delete
-     */
-    public function get($numericId)
-    {
-        return $this->mysqlMapper->getStorage($numericId);
+        return $this->storagesMapper->getHomeStorages();
     }
 
     public function updateId($currentId, $newId): void
@@ -47,15 +39,12 @@ class HomeStorageManager implements StorageManagerInterface
             'new_id' => $newId
         ]);
 
-        $this->mysqlMapper->updateIdStorage($currentId, $newId);
+        $this->storagesMapper->updateIdStorage($currentId, $newId);
     }
 
-    /**
-     * @todo delete
-     */
     public function getLocalStorage()
     {
-        return $this->mysqlMapper->getLocalStorage();
+        return $this->storagesMapper->getLocalStorage();
     }
 
 
