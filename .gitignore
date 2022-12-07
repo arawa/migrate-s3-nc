@@ -1,6 +1,7 @@
 .env
+.php-cs-fixer.cache
+*.bak
+logs/
+new_config.php
 notes/
 vendor/
-new_config.php
-logs/
-*.bak
