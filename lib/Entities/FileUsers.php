@@ -5,9 +5,9 @@ namespace MigrationS3NC\Entity;
 class FileUsers
 {
     public string $file_id;
-    public string $storage_id;
-    public string $relative_path;
     public string $owner;
+    public string $relative_path;
+    public string $storage_id;
 
     public function __construct()
     {

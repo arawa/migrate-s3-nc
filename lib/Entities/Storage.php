@@ -4,14 +4,10 @@ namespace MigrationS3NC\Entity;
 
 class Storage
 {
-    private $numeric_id;
-
-    private $id;
-
     private $available;
-
+    private $id;
     private $last_checked;
-
+    private $numeric_id;
     private $uid;
 
     public function __construct()

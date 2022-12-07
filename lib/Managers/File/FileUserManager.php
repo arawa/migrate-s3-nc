@@ -3,17 +3,23 @@
 namespace MigrationS3NC\Managers\File;
 
 use MigrationS3NC\Configuration\NextcloudConfiguration;
-use MigrationS3NC\Db\Mapper\MySqlMapper;
+use MigrationS3NC\Db\Mapper\FilesMapper;
+use MigrationS3NC\Db\Mapper\MimeTypesMapper;
+use MigrationS3NC\Db\Mapper\StoragesMapper;
 use MigrationS3NC\Iterator\FilesUserIterator;
 use MigrationS3NC\Logger\LoggerSingleton;
 
 class FileUserManager
 {
-    private MysqlMapper $mysqlMapper;
+    private FilesMapper $filesMapper;
+    private MimeTypesMapper $mimeTypesMapper;
+    private StoragesMapper $storagesMapper;
 
     public function __construct()
     {
-        $this->mysqlMapper = new MySqlMapper();
+        $this->filesMapper = new FilesMapper();
+        $this->mimeTypesMapper = new MimeTypesMapper();
+        $this->storagesMapper = new StoragesMapper();
     }
 
     /**
@@ -26,12 +32,12 @@ class FileUserManager
         ->getLogger()
         ->info('Get all files of the users without taking into account the local storage.');
 
-        $directoryUnix = $this->mysqlMapper->getUnixDirectoryMimeType();
-        $localStorage = $this->mysqlMapper->getLocalStorage();
+        $directoryUnix = $this->mimeTypesMapper->getUnixDirectoryMimeType();
+        $localStorage = $this->storagesMapper->getLocalStorage();
         
         $dataDirectory = NextcloudConfiguration::getInstance()->getDataDirectory();
 
-        $files = $this->mysqlMapper->getFilesUsers($directoryUnix->id, $localStorage->numeric_id);
+        $files = $this->filesMapper->getFilesUsers($directoryUnix->id, $localStorage->numeric_id);
         $newFiles = [];
         foreach ($files as $file) {
             $newFiles[] = new FilesUserIterator([

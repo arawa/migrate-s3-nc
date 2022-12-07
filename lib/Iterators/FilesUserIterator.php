@@ -4,10 +4,8 @@ namespace MigrationS3NC\Iterator;
 
 class FilesUserIterator implements \Iterator
 {
-    
-    private int $position = 0;
-
     private array $files = [];
+    private int $position = 0;
     
     public function __construct(array $files)
     {
