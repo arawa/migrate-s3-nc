@@ -1,12 +1,12 @@
 <?php
 
-namespace S3;
+namespace MigrationS3NC\S3;
 
-use Generator;
 use Aws\CommandPool;
 use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
-use Logger\LoggerSingleton;
+use Generator;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class S3Manager
 {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Managers;
+namespace MigrationS3NC\Managers;
 
-use Entity\Storage;
-use Db\Mapper\MySqlMapper;
-use Logger\LoggerSingleton;
-use Interfaces\StorageManagerInterface;
+use MigrationS3NC\Db\Mapper\MySqlMapper;
+use MigrationS3NC\Entity\Storage;
+use MigrationS3NC\Interfaces\StorageManagerInterface;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class HomeStorageManager implements StorageManagerInterface
 {

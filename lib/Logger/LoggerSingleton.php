@@ -1,10 +1,10 @@
 <?php
 
-namespace Logger;
+namespace MigrationS3NC\Logger;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 use Psr\Log\LogLevel;
 
 include __DIR__ . "/../functions.php";

@@ -1,6 +1,6 @@
 <?php
 
-namespace Constants;
+namespace MigrationS3NC;
 
 class Constants {
     public const ID_USER_OBJECT = 'object::user:';

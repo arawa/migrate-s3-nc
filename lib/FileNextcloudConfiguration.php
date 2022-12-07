@@ -1,8 +1,8 @@
 <?php
 
-namespace FileNextcloudConfiguration;
+namespace MigrationS3NC;
 
-use Logger\LoggerSingleton;
+use MigrationS3NC\Logger\LoggerSingleton;
 
 class FileNextcloudConfiguration
 {

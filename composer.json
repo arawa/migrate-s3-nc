@@ -11,24 +11,16 @@
     },
     "autoload": {
         "psr-4": {
-            "Constants\\": "lib/",
-            "Logger\\": "lib/Logger",
-            "Db\\": "lib/Db",
-            "Db\\Mapper\\" : "lib/Db/Mapper",
-            "Db\\Mapper\\MysqlMapper\\" : "lib/Db/Mapper",
-            "Db\\Pdo\\" : "lib/Db/Pdo",
-            "Db\\Pdo\\MySqlPDO\\" : "lib/Db/Pdo",
-            "Entities\\Storage\\": "lib/Entities",
-            "Entities\\File\\": "lib/Entities",
-            "Environment\\": "lib/",
-            "NextcloudS3Configuration\\": "lib/",
-            "FileNextcloudConfiguration\\": "lib/",
-            "Interfaces\\": "lib/Interfaces",
-            "Service\\": "lib/Service",
-            "S3\\": "lib/S3",
-            "NextcloudConfiguration\\": "lib/",
-            "Iterator\\": "lib/Iterators",
-            "Managers\\": "lib/Managers"
+            "MigrationS3NC\\": "lib/",
+            "MigrationS3NC\\Db\\": "lib/Db",
+            "MigrationS3NC\\Db\\Mapper\\" : "lib/Db/Mapper",
+            "MigrationS3NC\\Db\\Pdo\\" : "lib/Db/Pdo",
+            "MigrationS3NC\\Interfaces\\": "lib/Interfaces",
+            "MigrationS3NC\\Iterator\\": "lib/Iterators",
+            "MigrationS3NC\\Logger\\": "lib/Logger",
+            "MigrationS3NC\\Managers\\": "lib/Managers",
+            "MigrationS3NC\\S3\\": "lib/S3",
+            "MigrationS3NC\\Service\\": "lib/Service"
         }
     }
 }

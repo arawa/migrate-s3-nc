@@ -1,6 +1,6 @@
 <?php
 
-namespace Iterator;
+namespace MigrationS3NC\Iterator;
 
 class FilesLocalStorageIterator implements \Iterator
 {
