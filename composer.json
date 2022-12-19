@@ -1,5 +1,5 @@
 {
-    "version": "0.9",
+    "version": "1.1.0",
     "scripts": {
         "autoload": "composer dump-autoload",
         "cs:check": "php-cs-fixer fix --dry-run --diff",
